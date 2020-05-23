@@ -1,5 +1,6 @@
 # VSCode stuff
 *.code-workspace
+bin/*
 
 # Prerequisites
 *.d
