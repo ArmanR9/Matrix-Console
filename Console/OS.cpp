@@ -13,7 +13,8 @@ void OS::update(){
   unsigned long frameStart { millis() };
   unsigned long dT {frameStart - m_frameOld};
   m_frameOld = frameStart;
-
+  m_frame_dT = dT;  
+  
   // OS related functions, and game handling
     scrClear();
     computeBtnStates(dT);

@@ -16,6 +16,9 @@
 #define JOYY_PIN 5
 #define JOYZ_PIN 1
 
+template <typename T> int sgn_(T val) {
+    return (T(0) < val) - (val < T(0));
+}
 
 class OS {
 
@@ -85,7 +88,7 @@ private:
  	*  	   MISC      *  
 	*  INTERNAL DATA *	       		 	  	        					
  	* * * * * * * * */
-
+ 	 unsigned long m_frame_dT {0};
  	 unsigned int m_fpsMax {60};
 	 unsigned long m_dblTimer {0};
 	 unsigned int m_fpsTarget {1000/m_fpsMax};
@@ -447,9 +450,22 @@ unsigned long getBtnPressedTime() { return m_btnIsPressedTime; }
  * @return m_fpsMax --> uint long.
  */
 
-unsigned int getFPSMax() {return m_fpsMax; }
+unsigned int getFPSMax() { return m_fpsMax; }
 
-// Setters
+/**
+ * Gets Frame Delta Time
+ *
+ *
+ * Returns change in time between frames
+ *
+ * @param void
+ * @return m_frame_dT --> uint long.
+ */
+
+unsigned long getFrame_dT() { return m_frame_dT; }
+
+
+//  Setters
 
 /**
  * Set Joystick X input
