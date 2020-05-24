@@ -1,33 +1,33 @@
 #include "game.h"
 
 
-void GameEngine::computePlayerPos(Movement iMovement, int& posX, int& posY, int inputX = m_joyX, int inputY = m_joyY, int scalar = 1, bool oneAxis = false){
+void GameEngine::computePlayerPos(Movement iMovement, int& posX, int& posY, int inputX, int inputY, int scalar, bool oneAxis){
 
     m_dirX = sgn(inputX);
     m_dirY = sgn(inputY);
 
     switch(iMovement){
     
-    case(Movement::E_SIMPLE):
+        case(Movement::E_SIMPLE):
 
         if(oneAxis){
-          posX += abs(inputX) > abs(inputY) ? sgn(dirX) : 0;
-          posY += abs(inputX) < abs(inputY) ? sgn(dirY) : 0;
+            posX += abs(inputX) > abs(inputY) ? sgn(m_dirX) : 0;
+            posY += abs(inputX) < abs(inputY) ? sgn(m_dirY) : 0;
         }
 
         else {  
-        posX += m_dirX;
-        posY += m_dirY;
+            posX += m_dirX;
+            posY += m_dirY;
         }
         
-    break;
-
-
-    case(Movement::E_COMPLEX):
-
-        posX += m_dirX * inputX * scalar * (getFrame_dT() / 1000.0);
-        posY += m_dirY * inputY * scalar * (getFrame_dT() / 1000.0);
         break;
+
+
+        case(Movement::E_COMPLEX):
+
+            posX += m_dirX * inputX * scalar * (getFrame_dT() / 1000.0);
+            posY += m_dirY * inputY * scalar * (getFrame_dT() / 1000.0);
+            break;
 
     }
 }
@@ -45,7 +45,7 @@ bool GameEngine::detectCollision(int posX, int posY, int posX2, int posY2){
 
 bool GameEngine::isEntityDeleted(int entityX, int entityY) {
 
-   return entityX > SCR_W || entityY > SCR_H || entityX < 0 || entityY < 0)
+   return (entityX > SCR_W || entityY > SCR_H || entityX < 0 || entityY < 0);
 }
 
 
@@ -80,10 +80,73 @@ void GameEngine::gameOver(){
 
         scrDraw();
 
+        for(int device{0}; device < NUM_OF_LED; ++device){
+            switch(device){
+                case(0):
+                 scrDraw2(device, G);
+                 break;
+
+                 case(1):
+                 scrDraw2(device, A);
+                 break;
+
+                 case(2):
+                 scrDraw2(device, M);
+                 break;
+
+                 case(3):
+                 scrDraw2(device, E);
+                 break;
+            }
+        }
+/*
+    for(int device{0}; device < NUM_OF_LED; ++device){
+        for(int row{0}; row < SCR_W; ++row){
+            switch(device){
+                case(0):
+                 LedMatrix.setRow(device, row, G[row]);
+                 break;
+
+                 case(1):
+                 LedMatrix.setRow(device, row, A[row]);
+                 break;
+
+                 case(2):
+                 LedMatrix.setRow(device, row, M[row]);
+                 break;
+
+                 case(3):
+                 LedMatrix.setRow(device, row, E[row]);
+                 break;
+            }
+        }
+    }
+    */
+    
+    delay(1000);
+    scrClear2();
+
+    for(int device{0}; device < NUM_OF_LED; ++device){
+            switch(device){
+                case(0):
+                 scrDraw2(device, O);
+                 break;
+
+                 case(1):
+                 scrDraw2(device, V);
+                 break;
+
+                 case(2):
+                 scrDraw2(device, E);
+                 break;
+
+                 case(3):
+                 scrDraw2(device, R);
+                 break;
+            }
+        }
+
+    delay(1000);
+    scrClear2();
+
 }
-
-
-
-
-
-

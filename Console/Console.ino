@@ -4,7 +4,7 @@
 
 // Intialize Global Objects
 // Default Ctor
-OS GameOS;
+OS MatrixOS;
 
 
 // Intialize function
@@ -14,10 +14,10 @@ void setup() {
   Serial.begin(9600);
   randomSeed(1);
 
-  GameOS.scrInit();
-  GameOS.scrBrightness(1);
+  MatrixOS.scrInit();
+  MatrixOS.scrBrightness(1);
  // GameOS.scrBootUpAnim();  // Enable/Disable Screen Boot Up Animation
-  GameOS.setTimeOld(millis());
+  MatrixOS.setTimeOld(millis());
   
 }
 
@@ -26,6 +26,6 @@ void setup() {
 
 void loop() {
    
-   GameOS.update();
+  MatrixOS.update();
   
 }

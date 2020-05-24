@@ -1,5 +1,18 @@
 #include "OS.h"
-#include "game.h"
+//#include "game.h"
+
+// I should probably change this set-up, but all well. It works. ¯\_(ツ)_/¯
+
+unsigned char G[] = {B00000000,B00111110,B00100000,B00100000,B00101110,B00100010,B00111110,B00000000};
+unsigned char A[] = {B00000000,B00111100,B01100110,B01100110,B01111110,B01100110,B01100110,B01100110};
+unsigned char M[] = {B00000000,B00000000,B01000100,B10101010,B10010010,B10000010,B10000010,B00000000};
+unsigned char E[] = {B00000000,B00111100,B00100000,B00111000,B00100000,B00100000,B00111100,B00000000};
+unsigned char I[] = {B00000000,B00111000,B00010000,B00010000,B00010000,B00010000,B00111000,B00000000};
+unsigned char O[] = {B00000000,B00111100,B01000010,B01000010,B01000010,B01000010,B00111100,B00000000};
+unsigned char T[] = {B00000000,B01111100,B00010000,B00010000,B00010000,B00010000,B00010000,B00000000};
+unsigned char V[] = {B00000000,B00100010,B00100010,B00100010,B00010100,B00010100,B00001000,B00000000};
+unsigned char R[] = {B00000000,B00111000,B00100100,B00100100,B00111000,B00100100,B00100100,B00000000};
+unsigned char X[] = {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100,B01000010,B00000000};
 
 /* * * * * * * *  *
  * 				        *
@@ -16,24 +29,23 @@ void OS::update(){
   m_frame_dT = dT;  
   
   // OS related functions, and game handling
-    scrClear();
-    computeBtnStates(dT);
-    customJoyX(127, -127);
-    customJoyY(127, -127);
+  scrClear();
+  computeBtnStates(dT);
+  customJoyX(127, -127);
+  customJoyY(127, -127);
 //  Run Video Game
 //  updatePosition(*this);
-    profilingLED ();
+  profilingLED ();
  // printJoy(OS::E_VERBOSE);
  // printBtn(OS::E_VERBOSE);
-    scrDraw();
+  scrDraw();
 
   // Frame Handling pt2:
 
   unsigned long int frameDuration {millis() - frameStart};
 
-    if(m_fpsTarget > frameDuration){
-      delay(m_fpsTarget - frameDuration);
-    }
+  if(m_fpsTarget > frameDuration)
+    delay(m_fpsTarget - frameDuration);
 
 }
 
@@ -55,6 +67,30 @@ void OS::scrBootUpAnim(){
   OS::buzzer(330, 240, 320);
   OS::buzzer(392, 240, 320);
   OS::buzzer(494, 640, 700);
+
+  for(int device{0}; device < NUM_OF_LED; ++device){
+    switch(device){
+
+      case(0):
+        scrDraw2(device, M);
+        break;
+
+      case(1):
+        scrDraw2(device, A);
+        break;
+
+      case(2):
+        scrDraw2(device, T);
+        break;
+
+      case(3):
+        scrDraw2(device, X);
+        break;
+      }
+  }
+
+    delay(1000);
+    scrClear2();
   
   
 for(int matrix = 0; matrix < m_NUM_OF_LED; ++matrix){
@@ -108,6 +144,30 @@ void OS::scrBootOffAnim(){
     } 
   }
 
+  for(int device{0}; device < NUM_OF_LED; ++device){
+    switch(device){
+
+      case(0):
+        scrDraw2(device, M);
+        break;
+
+      case(1):
+        scrDraw2(device, A);
+        break;
+
+      case(2):
+        scrDraw2(device, T);
+        break;
+
+      case(3):
+        scrDraw2(device, X);
+        break;
+      }
+  }
+
+    delay(1000);
+    scrClear2();
+
    for(int addr {0}; addr < m_NUM_OF_LED; ++addr){
         LedMatrix.shutdown(addr, true);
     }
@@ -116,34 +176,33 @@ void OS::scrBootOffAnim(){
 
 
 void OS::scrReboot(){
-    for(int addr {0}; addr < m_NUM_OF_LED; ++addr){
-        LedMatrix.shutdown(addr, false);
-    }
+
+  for(int addr {0}; addr < m_NUM_OF_LED; ++addr)
+    LedMatrix.shutdown(addr, false);
 }
 
 
 
 void OS::scrBrightness(int level){
-    if(level > 16)
-        level = 16;
-    else if(level < 0)
-        level = 0;
+  if(level > 16)
+    level = 16;
+  else if(level < 0)
+    level = 0;
         
-    for(int addr {0}; addr < m_NUM_OF_LED; ++addr)
-        LedMatrix.setIntensity(addr, level);
+  for(int addr {0}; addr < m_NUM_OF_LED; ++addr)
+    LedMatrix.setIntensity(addr, level);
 }
 
 
 
 void OS::scrClear(){
 
-    for(int row {0}; row < 8; ++row){
-        m_pixelsA[row] = 0;
-        m_pixelsB[row] = 0;
-        m_pixelsC[row] = 0;
-        m_pixelsD[row] = 0;
-    }
-
+  for(int row {0}; row < 8; ++row){
+    m_pixelsA[row] = 0;
+    m_pixelsB[row] = 0;
+    m_pixelsC[row] = 0;
+    m_pixelsD[row] = 0;
+  }
 }
 
 
@@ -161,11 +220,12 @@ void OS::scrClear2(){
 #define OUT_OF_RANGE iX > 31 || iX < 0 || iY > 7 || iY < 0 
 
 void OS::scrSetLED(int iX, int iY, bool state){
+
   if(OUT_OF_RANGE)
     return;
 
   switch(state){
-
+  
     case(true):
     if(iX > 23)
       m_pixelsA[abs(iY-7)] |=  1 << abs(iX - 24 - 7);
@@ -182,7 +242,6 @@ void OS::scrSetLED(int iX, int iY, bool state){
     break;
 
     default:
- 
     if(iX > 23)
       m_pixelsA[abs(iY-7)] &= ~(1 << abs(iX - 24 - 7));
   
@@ -197,39 +256,44 @@ void OS::scrSetLED(int iX, int iY, bool state){
     
     break;
   }
-
 }
 
 
 void OS::scrSetLED2(int iX, int iY, bool state){
+
   if(OUT_OF_RANGE)
     return;
 
-    if(iX > 23)
-     LedMatrix.setLed(0, abs(iX-24-7), abs(iY-7), state);
+  if(iX > 23)
+    LedMatrix.setLed(0, abs(iX-24-7), abs(iY-7), state);
   
-    else if(iX > 15)
-     LedMatrix.setLed(1, abs(iX-16-7), abs(iY-7), state);
+  else if(iX > 15)
+    LedMatrix.setLed(1, abs(iX-16-7), abs(iY-7), state);
 
-    else if(iX > 7)
-      LedMatrix.setLed(2, abs(iX-8-7), abs(iY-7), state);
+  else if(iX > 7)
+    LedMatrix.setLed(2, abs(iX-8-7), abs(iY-7), state);
 
-    else
-      LedMatrix.setLed(3, abs(iX-7), abs(iY-7), state);
-
+  else
+    LedMatrix.setLed(3, abs(iX-7), abs(iY-7), state);
 }
 
 
 
 void OS::scrDraw(){
 
-  for(int row {8}; row >= 0; --row){
-      LedMatrix.setColumn(0, row, m_pixelsA[row]);
-      LedMatrix.setColumn(1, row, m_pixelsB[row]);
-      LedMatrix.setColumn(2, row, m_pixelsC[row]);
-      LedMatrix.setColumn(3, row, m_pixelsD[row]);
+  for(int row {0}; row < 8; ++row){
+      LedMatrix.setRow(0, row, m_pixelsA[row]);
+      LedMatrix.setRow(1, row, m_pixelsB[row]);
+      LedMatrix.setRow(2, row, m_pixelsC[row]);
+      LedMatrix.setRow(3, row, m_pixelsD[row]);
   }
+}
 
+
+void OS::scrDraw2(int device, unsigned char* array){
+
+  for(int row {0}; row < 8; ++row)
+    LedMatrix.setRow(device, row, *(array+row));
 }
 
 
@@ -250,12 +314,12 @@ void OS::scrDraw(){
 
 int OS::customJoyX(float max, float min, int threshold){
 
-        m_joyX = -((analogRead(m_joyXPin) / 1024.0) * (max*2) + min);
+  m_joyX = -((analogRead(m_joyXPin) / 1024.0) * (max*2) + min);
 
-         if(abs(m_joyX) < threshold) // Deadband
-             m_joyX = 0;
+    if(abs(m_joyX) < threshold) // Deadband
+       m_joyX = 0;
 
-             return m_joyX;
+  return m_joyX;
 }
 
 // Remap Joystick Y method
@@ -266,12 +330,12 @@ int OS::customJoyX(float max, float min, int threshold){
 
 int OS::customJoyY(float max, float min, int threshold){
 
-        m_joyY = -((analogRead(m_joyYPin) / 1024.0) * (max*2) + min);
+  m_joyY = -((analogRead(m_joyYPin) / 1024.0) * (max*2) + min);
 
-         if(abs(m_joyY) < threshold) // Deadband
-             m_joyY = 0;
+    if(abs(m_joyY) < threshold) // Deadband
+      m_joyY = 0;
 
-             return m_joyY;
+  return m_joyY;
 }
 
 
@@ -287,33 +351,35 @@ bool isToggled = false;
 
 void OS::computeBtnStates(int dT){
   
-    bool btnOld = m_btnIsPressed;
-    m_btnIsPressed = digitalRead(m_btnPin);
-    bool btnPressedThisCycle = m_btnIsPressed && (m_btnIsPressed != btnOld);
+  bool btnOld = m_btnIsPressed;
+  m_btnIsPressed = digitalRead(m_btnPin);
+  bool btnPressedThisCycle = m_btnIsPressed && (m_btnIsPressed != btnOld);
 
-    if(!isToggled && btnPressedThisCycle){
-        m_btnIsToggled = 1 - m_btnIsToggled;
-        isToggled = !isToggled;
-    }
-    else{
-       isToggled = 0;
-    }
+  if(!isToggled && btnPressedThisCycle){
+      m_btnIsToggled = 1 - m_btnIsToggled;
+      isToggled = !isToggled;
+  }
+  else{
+    isToggled = 0;
+  }
 
-    if(btnPressedThisCycle && m_dblTimer > 500){
-        m_btnIsPressedTime = 0;
-        m_dblTimer = 0;
-    }
-    else if(btnPressedThisCycle && m_dblTimer < 500){
-        m_btnIsPressedTime = 0;
-        m_btnIsDoubleTapped = !m_btnIsDoubleTapped; // Set whether the btn has been double tapped or not
-    }
-    else{
-      m_dblTimer += dT;
-    }
 
-     if(m_btnIsPressed){
-        m_btnIsPressedTime += dT;
-    }
+  if(btnPressedThisCycle && m_dblTimer > 500){
+    m_btnIsPressedTime = 0;
+    m_dblTimer = 0;
+  }
+  else if(btnPressedThisCycle && m_dblTimer < 500){
+    m_btnIsPressedTime = 0;
+    m_btnIsDoubleTapped = !m_btnIsDoubleTapped; // Set whether the btn has been double tapped or not
+  }
+  else{
+    m_dblTimer += dT;
+  }
+
+
+  if(m_btnIsPressed){
+    m_btnIsPressedTime += dT;
+  }
 }
 
 
@@ -324,8 +390,8 @@ void OS::computeBtnStates(int dT){
 
 
 void OS::buzzer(short freq, unsigned short time, unsigned int iDelay){
-    tone(m_buzzPin, freq, time);
-    delay(iDelay);
+  tone(m_buzzPin, freq, time);
+  delay(iDelay);
 }
 
 
@@ -343,100 +409,99 @@ void OS::printJoy(DebugLevel debuglvl){
 
   switch(debuglvl){
 
-  case(DebugLevel::E_VERBOSE):
+    case(DebugLevel::E_VERBOSE):
 
-  Serial.print("joyX: "); Serial.print(m_joyX);
-  Serial.print(" joyY: "); Serial.print(m_joyY);
-  Serial.print("\n");
+      Serial.print("joyX: "); Serial.print(m_joyX);
+      Serial.print(" joyY: "); Serial.print(m_joyY);
+      Serial.print("\n");
 
-  Serial.print("rawX: "); Serial.print(analogRead(m_joyXPin));
-  Serial.print(" rawY: "); Serial.print(analogRead(m_joyYPin));
-  Serial.print(" rawZ: "); Serial.print(analogRead(m_joyZPin));
+      Serial.print("rawX: "); Serial.print(analogRead(m_joyXPin));
+      Serial.print(" rawY: "); Serial.print(analogRead(m_joyYPin));
+      Serial.print(" rawZ: "); Serial.print(analogRead(m_joyZPin));
 
-  Serial.print("\n");
-  break;
+      Serial.print("\n");
+      break;
 
-  case(DebugLevel::E_NORMAL):
+    case(DebugLevel::E_NORMAL):
 
-  Serial.print("joyX: "); Serial.print(m_joyX);
-  Serial.print(" joyY: "); Serial.print(m_joyY);
-  Serial.print("\n");
-  break;
+      Serial.print("joyX: "); Serial.print(m_joyX);
+      Serial.print(" joyY: "); Serial.print(m_joyY);
+      Serial.print("\n");
+      break;
   }
-
 }
 
 void OS::printBtn(DebugLevel debuglvl){
 
-    switch(debuglvl){
+  switch(debuglvl){
 
     case(DebugLevel::E_VERBOSE):
-    Serial.print("btnRaw: "); Serial.print(m_btnIsPressed);
-    Serial.print(" btnToggle: "); Serial.print(m_btnIsToggled);
-    Serial.print(" btnDblTap: "); Serial.print(m_btnIsDoubleTapped);
-    Serial.print(" btnDblTime: "); Serial.print(m_dblTimer);
-    Serial.print(" btnTime: "); Serial.print(m_btnIsPressedTime);
+      Serial.print("btnRaw: "); Serial.print(m_btnIsPressed);
+      Serial.print(" btnToggle: "); Serial.print(m_btnIsToggled);
+      Serial.print(" btnDblTap: "); Serial.print(m_btnIsDoubleTapped);
+      Serial.print(" btnDblTime: "); Serial.print(m_dblTimer);
+      Serial.print(" btnTime: "); Serial.print(m_btnIsPressedTime);
 
-    Serial.print("\n");
-    break;
+      Serial.print("\n");
+      break;
 
     case(DebugLevel::E_NORMAL):
-    Serial.print("btnRaw: "); Serial.print(m_btnIsPressed);
-    Serial.print(" btnToggle: "); Serial.print(m_btnIsToggled);
-    Serial.print(" btnDblTap: "); Serial.print(m_btnIsDoubleTapped);
+      Serial.print("btnRaw: "); Serial.print(m_btnIsPressed);
+      Serial.print(" btnToggle: "); Serial.print(m_btnIsToggled);
+      Serial.print(" btnDblTap: "); Serial.print(m_btnIsDoubleTapped);
 
-    Serial.print("\n");
-    break;
-    }
+      Serial.print("\n");
+      break;
+  }
 }
 
 void OS::printBuzz(DebugLevel debuglvl){
-    switch(debuglvl){
+
+  switch(debuglvl){
   
     case(DebugLevel::E_VERBOSE):
       Serial.print("Buzz: "); Serial.print(digitalRead(m_buzzPin));
       Serial.print(" PIN: "); Serial.print(m_buzzPin);
 
       Serial.print("\n");
-    break;
+      break;
 
     case(DebugLevel::E_NORMAL):
       Serial.print("Buzz: "); Serial.print(digitalRead(m_buzzPin));
     
       Serial.print("\n");
-    break;
-    }
+      break;
+  }
 }
 
 void OS::printLEDMatrix(DebugLevel debuglvl){
-    switch(debuglvl){
+
+  switch(debuglvl){
     
     case(DebugLevel::E_VERBOSE): 
 
-    Serial.print("DIN Data: "); Serial.print(digitalRead(m_dinPin));
-    Serial.print("  CS DATA: "); Serial.print(digitalRead(m_csPin));
-    Serial.print("  CLK DATA: "); Serial.print(digitalRead(m_clkPin));
+      Serial.print("DIN Data: "); Serial.print(digitalRead(m_dinPin));
+      Serial.print("  CS DATA: "); Serial.print(digitalRead(m_csPin));
+      Serial.print("  CLK DATA: "); Serial.print(digitalRead(m_clkPin));
     
-    Serial.print("\n");
+      Serial.print("\n");
 
-    Serial.print("DIN PIN: "); Serial.print(m_dinPin);
-    Serial.print(" CS Pin: "); Serial.print(m_csPin);
-    Serial.print(" CLK Pin: "); Serial.print(m_clkPin);
+      Serial.print("DIN PIN: "); Serial.print(m_dinPin);
+      Serial.print(" CS Pin: "); Serial.print(m_csPin);
+      Serial.print(" CLK Pin: "); Serial.print(m_clkPin);
     
-    Serial.print("\n");
-    break;
+      Serial.print("\n");
+      break;
 
     case(DebugLevel::E_NORMAL):
 
-    Serial.print("DIN PIN: "); Serial.print(m_dinPin);
-    Serial.print(" CS Pin: "); Serial.print(m_csPin);
-    Serial.print(" CLK Pin: "); Serial.print(m_clkPin);
+      Serial.print("DIN PIN: "); Serial.print(m_dinPin);
+      Serial.print(" CS Pin: "); Serial.print(m_csPin);
+      Serial.print(" CLK Pin: "); Serial.print(m_clkPin);
     
-    Serial.print("\n");
-    break;
-
-
-    }
+      Serial.print("\n");
+      break;
+  }
 }
 
 

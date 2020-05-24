@@ -16,9 +16,16 @@
 #define JOYY_PIN 5
 #define JOYZ_PIN 1
 
-template <typename T> int sgn_(T val) {
-    return (T(0) < val) - (val < T(0));
-}
+extern unsigned char G[];
+extern unsigned char A[];
+extern unsigned char M[];
+extern unsigned char E[];
+extern unsigned char I[];
+extern unsigned char O[];
+extern unsigned char T[];
+extern unsigned char V[];
+extern unsigned char R[];
+extern unsigned char X[];
 
 class OS {
 
@@ -259,6 +266,24 @@ void scrSetLED2(int iX, int iY, bool state);
  */
 
 void scrDraw();
+
+/**
+ * Screen Draw2 Method
+ *
+ * Draws LED Coordinates for custom arrays (used for letters in this project)
+ * Call this aftter setting a byte array of which letters are ON/OFF per row.
+ *  
+ * 
+ * 
+ * @param device Integer of address of each LED Matrix. Typically loop through each device and call with
+ * an iterator.
+ * @param array Byte Array, that contains data for setting pixel ON/OFF in each row
+ * 
+ * @return void
+ */
+
+
+void scrDraw2(int device, unsigned char* array);
 
 
 /* * * * * * * *  *
@@ -663,10 +688,10 @@ m_buzzPin(BUZZ_PIN),
 m_joyXPin(JOYX_PIN), m_joyYPin(JOYY_PIN), m_joyZPin(JOYZ_PIN)
 
 {
-		  //LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
-      	pinMode(m_btnPin, INPUT);
-     // pinMode(m_ldrPin, INPUT);
-      	pinMode(m_buzzPin, OUTPUT);
+	  //  LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
+      	  pinMode(m_btnPin, INPUT);
+     //   pinMode(m_ldrPin, INPUT);
+      	  pinMode(m_buzzPin, OUTPUT);
 	      scrClear();
 	      m_frameOld = millis();
 } 
@@ -688,11 +713,11 @@ OS::OS (const int iScrW, const int iScrH,
 
 {
 	  //	LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
-      	pinMode(m_btnPin, INPUT);
-    //  pinMode(m_ldrPin, INPUT);
-      	pinMode(m_buzzPin, OUTPUT);
-	      scrClear();
-	      m_frameOld = millis();
+      		pinMode(m_btnPin, INPUT);
+    //  	pinMode(m_ldrPin, INPUT);
+      		pinMode(m_buzzPin, OUTPUT);
+	      	scrClear();
+	      	m_frameOld = millis();
 }
 
 
@@ -702,7 +727,7 @@ OS::OS (const int iScrW, const int iScrH,
  * 				     *
  * * * * * * * * * * */
 
-~OS(){
-}
+~OS(){}
+
 
 };
