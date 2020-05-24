@@ -40,7 +40,7 @@ void GameEngine::spawnEntity(){
 
 bool GameEngine::detectCollision(int posX, int posY, int posX2, int posY2){
 
-    return posX + posY == posX2 + posY2;
+    return posX == posX2 && posY == posY2;
 }
 
 bool GameEngine::isEntityDeleted(int entityX, int entityY) {

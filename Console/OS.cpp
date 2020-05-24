@@ -14,10 +14,10 @@ unsigned char V[] = {B00000000,B00100010,B00100010,B00100010,B00010100,B00010100
 unsigned char R[] = {B00000000,B00111000,B00100100,B00100100,B00111000,B00100100,B00100100,B00000000};
 unsigned char X[] = {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100,B01000010,B00000000};
 
-/* * * * * * * *  *
- * 				        *
- *  MAIN METHOD   *
- * 				        *
+/* * * * * * * * *
+ * 				        
+ *  MAIN METHOD   
+ * 				        
  * * * * * * * * */
 
 void OS::update(){
@@ -51,9 +51,9 @@ void OS::update(){
 
 
 /* * * * * * * *  *
- * 				        *
- * SCREEN METHODS *
- * 				        *
+ * 				        
+ * SCREEN METHODS 
+ * 				        
  * * * * * * * * */
 
 void OS::scrInit(){
@@ -299,9 +299,9 @@ void OS::scrDraw2(int device, unsigned char* array){
 
 
 /* * * * * * * *  *
- * 				        *
- * PERIPHERAL I/O *
- * 				        *
+ * 				        
+ * PERIPHERAL I/O 
+ * 				        
  * * * * * * * *  */
 
 
@@ -396,9 +396,9 @@ void OS::buzzer(short freq, unsigned short time, unsigned int iDelay){
 
 
 /* * * * * * * * * *
- * 				         *
- *    DEBUGGING    *
- * 				         *
+ * 				         
+ *    DEBUGGING    
+ * 				         
  * * * * * * * * * */
 
 

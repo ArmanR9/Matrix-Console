@@ -27,16 +27,15 @@ extern unsigned char V[];
 extern unsigned char R[];
 extern unsigned char X[];
 
-class OS {
 
+class OS {
 private:
 
-	/* * * * * * * *  *
- 	* 				  *
- 	*  	 CONSTANTS	  *
- 	* 				  *
- 	* 				  *
- 	* * * * * * * * * */
+	/* * * * * * * * 
+ 	* 				  
+ 	*    CONSTANTS	  
+ 	* 				   				  
+ 	* * * * * * * * */
 
  	// Setting pins for devices
 	// and screen constants
@@ -54,12 +53,12 @@ private:
 	const int m_joyYPin;
 	const int m_joyZPin; 
 
-	/* * * * * * * *  *
- 	* 				  *
- 	*  	SCREEN DATA   *
-	* 		AND       *
-	* 	  OBJECT	  *
- 	* 				  *				
+	/* * * * * * * * * 
+ 	* 				  
+ 	*  	SCREEN DATA   
+	* 		AND       
+	* 	  OBJECT	  
+ 	* 				  				
  	* * * * * * * * * */
 
 	// Byte arrays of pixels. A,B,C,D represent Matrices and their addresses
@@ -75,11 +74,11 @@ private:
 	LedControl LedMatrix;
 
 
-	/* * * * * * * * *
- 	* 				 *
- 	*  	   I/O       *
-	* 	   DATA      *
-	* 	  	         *						
+	/* * * * * * * * 
+ 	* 				 
+ 	*  	   I/O       
+	* 	   DATA      
+	* 	  	         						
  	* * * * * * * * */
 
 	int m_joyX {0};
@@ -92,9 +91,10 @@ private:
 
 	
 	/* * * * * * * * *			 
- 	*  	   MISC      *  
-	*  INTERNAL DATA *	       		 	  	        					
+ 	*  	   MISC      
+	*  INTERNAL DATA 	       		 	  	        					
  	* * * * * * * * */
+
  	 unsigned long m_frame_dT {0};
  	 unsigned int m_fpsMax {60};
 	 unsigned long m_dblTimer {0};
@@ -105,11 +105,10 @@ private:
 
 public:
 
-/* * * * * * * *  *
- * 				  *
- *  MAIN METHOD   *
- * 				  *
- * 				  *
+/* * * * * * * * *
+ * 				  
+ *  MAIN METHOD   				  
+ * 				  
  * * * * * * * * */
 
 /**
@@ -129,9 +128,9 @@ void update();
 
 
 /* * * * * * * *  *
- * 				  *
- * SCREEN METHODS *
- * 				  *
+ * 				  
+ * SCREEN METHODS 
+ * 				  
  * * * * * * * * */
 
 /**
@@ -286,12 +285,12 @@ void scrDraw();
 void scrDraw2(int device, unsigned char* array);
 
 
-/* * * * * * * *  *
- * 				  *
- * PERIPHERAL I/O *
- * 				  *
- * 				  *
- * * * * * * * *  */
+/* * * * * * * * *
+ * 				  
+ * PERIPHERAL I/O 
+ * 				  
+ * 				  
+ * * * * * * * * */
 
 /**
  * Custom Joystick X method
@@ -371,10 +370,10 @@ void buzzer(short freq, unsigned short time, unsigned int iDelay = 0);
 
 
 /* * * * * * * * * *
- * 				   *
- * 		 I/O       *
- * GETTERS/SETTERS *
- * 				   *
+ * 				   
+ * 		 I/O       
+ * GETTERS/SETTERS 
+ * 				   
  * * * * * * * * * */
 
 // Getters
@@ -582,9 +581,9 @@ void setFPSMax(unsigned long fps) { m_fpsMax = fps; }
 
 
 /* * * * * * * * * *
- * 				   *
- *    DEBUGGING    *
- * 				   *
+ * 				  
+ *    DEBUGGING    
+ * 				   
  * * * * * * * * * */
 
 /** Debug Level Enumeration
@@ -669,9 +668,9 @@ void profilingLED();
 
 
 /* * * * * * * * * *
- * 				   *
- *   CONSTRUCTORS  *
- * 				   *
+ * 				   
+ *   CONSTRUCTORS  
+ * 				   
  * * * * * * * * * */
 
 // Intializing objects and variables
@@ -722,9 +721,9 @@ OS::OS (const int iScrW, const int iScrH,
 
 
 /* * * * * * * * * * *
- * 				     *
- *   DECONSTRUCTORS  *
- * 				     *
+ * 				     
+ *   DECONSTRUCTORS  
+ * 				     
  * * * * * * * * * * */
 
 ~OS(){}
