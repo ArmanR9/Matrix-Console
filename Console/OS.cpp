@@ -1,5 +1,5 @@
 #include "OS.h"
-//#include "game.h"
+#include "game.h"
 
 // I should probably change this set-up, but all well. It works. ¯\_(ツ)_/¯
 
@@ -20,34 +20,29 @@ unsigned char X[] = {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100
  * 				        
  * * * * * * * * */
 
-void OS::update(){
-  
-  // Frame Handling
-  unsigned long frameStart { millis() };
-  unsigned long dT {frameStart - m_frameOld};
-  m_frameOld = frameStart;
-  m_frame_dT = dT;  
-  
-  // OS related functions, and game handling
+void OS::update(unsigned int dT){
+
+  // Screen Clear, and compute I/O States
   scrClear();
   computeBtnStates(dT);
   customJoyX(127, -127);
   customJoyY(127, -127);
+}
+
+void OS::update2(){
+
+  // Screen Draw
+  profilingLED();
+  scrDraw();
+}
+
 //  Run Video Game
+  //GameHandler->runGame(changeGame(GameHandler, 2000););
+   // Check if game is changed??
 //  updatePosition(*this);
-  profilingLED ();
+
  // printJoy(OS::E_VERBOSE);
  // printBtn(OS::E_VERBOSE);
-  scrDraw();
-
-  // Frame Handling pt2:
-
-  unsigned long int frameDuration {millis() - frameStart};
-
-  if(m_fpsTarget > frameDuration)
-    delay(m_fpsTarget - frameDuration);
-
-}
 
 
 /* * * * * * * *  *
@@ -542,4 +537,36 @@ void OS::profilingLED(){
 
   Serial.print("Not Bit Manipulation (Execution Time): "); Serial.print(dT2); Serial.print('\n');
   
+}
+
+
+OS::Games OS::changeGame(unsigned int changeTime, bool inSeconds){
+  
+  static short gameIndex {0};
+  changeTime = inSeconds ? changeTime * 1000 : changeTime;
+
+  if(m_btnIsToggled && m_btnIsPressedTime > changeTime){
+    gameIndex++;
+    gameIndex % m_gamesLoaded;
+    OS::Games gameSel = m_gameList[gameIndex];
+   // delete Game;
+
+    switch(gameSel){
+
+      case(Games::E_SNAKE):
+        // Game = new SnakeGame(); 
+        return Games::E_SNAKE;
+        break;
+
+      case(Games::E_INVADERS):
+        // Game = new InvadersGame();
+        return Games::E_INVADERS;
+        break;
+
+       case(Games::E_ERR):
+        return Games::E_ERR;
+        break;
+    }
+  }
+  return Games::E_ERR;
 }

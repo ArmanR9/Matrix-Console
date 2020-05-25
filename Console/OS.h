@@ -2,6 +2,8 @@
 #include "LedControl.h"
 #include "Arduino.h"
 
+// ERROR CODES
+#define ERR 4294967295;
 // DEFINES
 #define SCR_W 32
 #define SCR_H 8
@@ -16,6 +18,7 @@
 #define JOYY_PIN 5
 #define JOYZ_PIN 1
 
+// Global Byte Arrays for letters on matrices.
 extern unsigned char G[];
 extern unsigned char A[];
 extern unsigned char M[];
@@ -29,6 +32,14 @@ extern unsigned char X[];
 
 
 class OS {
+public:
+
+	enum class Games{
+	E_SNAKE = 0,
+	E_INVADERS,
+	E_ERR
+	};
+
 private:
 
 	/* * * * * * * * 
@@ -94,13 +105,15 @@ private:
  	*  	   MISC      
 	*  INTERNAL DATA 	       		 	  	        					
  	* * * * * * * * */
-
+ 	// Games m_oldGame {Games::E_SNAKE};
+ 	 const int m_gamesLoaded;
  	 unsigned long m_frame_dT {0};
  	 unsigned int m_fpsMax {60};
 	 unsigned long m_dblTimer {0};
 	 unsigned int m_fpsTarget {1000/m_fpsMax};
 	 unsigned long m_frameOld;
 	 bool m_isToggle = false;
+   static const Games m_gameList[2] {Games::E_SNAKE, Games::E_INVADERS};
 
 
 public:
@@ -114,9 +127,9 @@ public:
 /**
  * Update Method
  *
- * Essentially the main method.
- * Calls all relevant methods in the main loop to handle
- * screen logic, peripheral I/O, and running the app logic.
+ * Handles OS related functions
+ * Calls all relevant methods to compute I/O States
+ * Clears screen at start
  *
  * @param void
  * 
@@ -124,7 +137,21 @@ public:
  */
 
 
-void update(); 
+void update(unsigned int dT); 
+
+/**
+ * Update2 Method
+ *
+ * 
+ * Handles debugging and screen drawing
+ * Takes in the final byte data for pixels, and outputs it on screen.
+ *
+ * @param void
+ * 
+ * @return void-
+ */
+
+void update2();
 
 
 /* * * * * * * *  *
@@ -471,10 +498,22 @@ unsigned long getBtnPressedTime() { return m_btnIsPressedTime; }
  * Returns what the MAX FPS is.
  *
  * @param void
- * @return m_fpsMax --> uint long.
+ * @return m_fpsMax --> uint.
  */
 
 unsigned int getFPSMax() { return m_fpsMax; }
+
+/**
+ * Get FPS target
+ *
+ *
+ * Returns what the FPS Target is in ms
+ *
+ * @param void
+ * @return m_fpsTarget --> uint.
+ */
+
+unsigned int getFPSTarget() { return m_fpsTarget; }
 
 /**
  * Gets Frame Delta Time
@@ -487,6 +526,18 @@ unsigned int getFPSMax() { return m_fpsMax; }
  */
 
 unsigned long getFrame_dT() { return m_frame_dT; }
+
+/**
+ * Gets Old Frame Time
+ *
+ *
+ * Returns time from last frame
+ *
+ * @param void
+ * @return m_frameOld --> uint long.
+ */
+
+unsigned long getTimeOld() { return m_frameOld; }
 
 
 //  Setters
@@ -556,6 +607,17 @@ void setBtnDoubleTap(bool state) { m_btnIsDoubleTapped = state; }
  */
 
 void setBtnPressedTime(unsigned long time) { m_btnIsPressedTime = time; }
+
+/**
+ * Set the dT between frame times
+ *
+ * Sets m_frame_dT to specific time
+ *
+ * @param timeDT uint long of how the duration of the dT.
+ * @return void
+ */
+
+void setFrame_dT(unsigned long timeDT) { m_frame_dT = timeDT; }
 
 /**
  * Set the time of the old frame
@@ -666,6 +728,9 @@ void printLEDMatrix(DebugLevel debuglvl = E_NORMAL);
 void profilingLED();
 
 
+Games changeGame(unsigned int changeTime, bool inSeconds = false);
+
+
 
 /* * * * * * * * * *
  * 				   
@@ -684,7 +749,8 @@ m_scrW(SCR_W), m_scrH(SCR_H),
 m_dinPin(DIN_PIN), m_csPin(CS_PIN), m_clkPin(CLK_PIN),
 m_NUM_OF_LED(NUM_OF_LED), m_btnPin(BTN_PIN), // m_ldrPin(LDR_PIN)
 m_buzzPin(BUZZ_PIN),
-m_joyXPin(JOYX_PIN), m_joyYPin(JOYY_PIN), m_joyZPin(JOYZ_PIN)
+m_joyXPin(JOYX_PIN), m_joyYPin(JOYY_PIN), m_joyZPin(JOYZ_PIN),
+m_gamesLoaded(2)
 
 {
 	  //  LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
@@ -700,7 +766,8 @@ m_joyXPin(JOYX_PIN), m_joyYPin(JOYY_PIN), m_joyZPin(JOYZ_PIN)
 OS::OS (const int iScrW, const int iScrH,
 	const int iDinPin, const int iCsPin, const int iClkPin,
 	const int iNumOfLED, const int iBtnPin, const int iBuzzPin,
-	const int iJoyXpin, const int iJoyYpin, const int iJoyZpin
+	const int iJoyXpin, const int iJoyYpin, const int iJoyZpin,
+	const int iGamesLoaded
 	) 
 	:	
   LedMatrix(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED),
@@ -708,7 +775,8 @@ OS::OS (const int iScrW, const int iScrH,
 	m_dinPin(iDinPin), m_csPin(iCsPin), m_clkPin(iClkPin),
 	m_NUM_OF_LED(iNumOfLED), m_btnPin(iBtnPin), // m_ldrPin(LDR_PIN)
 	m_buzzPin(iBuzzPin),
-	m_joyXPin(iJoyXpin), m_joyYPin(iJoyYpin), m_joyZPin(iJoyZpin)
+	m_joyXPin(iJoyXpin), m_joyYPin(iJoyYpin), m_joyZPin(iJoyZpin),
+	m_gamesLoaded(iGamesLoaded)
 
 {
 	  //	LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);

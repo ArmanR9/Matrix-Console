@@ -1,7 +1,36 @@
 #include "game.h"
 
 
-void GameEngine::computePlayerPos(Movement iMovement, int& posX, int& posY, int inputX, int inputY, int scalar, bool oneAxis){
+
+void GameEngine::runGame(OS::Games currentGame){
+
+    if(currentGame == OS::Games::E_ERR){
+        // just update
+        int i = 0;
+    }
+    else{
+        if(currentGame != m_oldGame){
+        //  delete this;
+
+            switch(currentGame){
+                case(OS::Games::E_SNAKE):
+                    //this = Snake();
+                    m_oldGame = Games::E_SNAKE; 
+                    break;
+
+                case(OS::Games::E_INVADERS):
+                    // this = Invaders();
+                    m_oldGame = Games::E_INVADERS;
+                    break;
+            }
+            // update game
+        }
+    }
+}
+
+
+
+Vec2 GameEngine::computePlayerPos(Movement iMovement, Vec2 Player, int inputX, int inputY, int scalar, bool oneAxis){
 
     m_dirX = sgn(inputX);
     m_dirY = sgn(inputY);
@@ -11,13 +40,13 @@ void GameEngine::computePlayerPos(Movement iMovement, int& posX, int& posY, int 
         case(Movement::E_SIMPLE):
 
         if(oneAxis){
-            posX += abs(inputX) > abs(inputY) ? sgn(m_dirX) : 0;
-            posY += abs(inputX) < abs(inputY) ? sgn(m_dirY) : 0;
+            Player.x += abs(inputX) > abs(inputY) ? sgn(m_dirX) : 0;
+            Player.y += abs(inputX) < abs(inputY) ? sgn(m_dirY) : 0;
         }
 
         else {  
-            posX += m_dirX;
-            posY += m_dirY;
+            Player.x += m_dirX;
+            Player.y += m_dirY;
         }
         
         break;
@@ -25,39 +54,112 @@ void GameEngine::computePlayerPos(Movement iMovement, int& posX, int& posY, int 
 
         case(Movement::E_COMPLEX):
 
-            posX += m_dirX * inputX * scalar * (getFrame_dT() / 1000.0);
-            posY += m_dirY * inputY * scalar * (getFrame_dT() / 1000.0);
+            Player.x += m_dirX * inputX * scalar * (getFrame_dT() / 1000.0);
+            Player.y += m_dirY * inputY * scalar * (getFrame_dT() / 1000.0);
             break;
 
     }
-}
-
-void GameEngine::spawnEntity(){
-
-
+    return Player;
 }
 
 
-bool GameEngine::detectCollision(int posX, int posY, int posX2, int posY2){
+unsigned long GameEngine::computeRNGTimer(unsigned int iMin, unsigned int iMax, bool faster, unsigned int slowDown){
+    if(!iMin || !iMax){
+        Serial.print("ERROR: Did not specify iMin and iMax when calling computeRNGTimer"); Serial.print('\n');
+        return ERR;
+    }
 
-    return posX == posX2 && posY == posY2;
+    if(faster){
+       slowDown = clip(slowDown, 5u, 1u);
+    }
+
+    unsigned long t1 = random(iMin, iMax);
+    static float tFast {0.0f};
+    tFast = (tFast + slowDown) * 0.01;
+
+    if(faster){
+       tFast = clip(tFast, 1.0f, 0.25f);
+    }
+
+    if(tFast < 0.26)
+        return t1;
+    else
+        return min(t1 * tFast, t1);
+   
+}
+void snakeMap(){
+
+    unsigned char snakeMap[32] {};
+    int x[5] {};
+    int y[5] {};
+    int snLen = 5;
+
+    for(int i = 0; i < snLen; ++i){
+        snakeMap[x[i]] |= 1 << y[i]; 
+    }
+
 }
 
-bool GameEngine::isEntityDeleted(int entityX, int entityY) {
+Vec2 GameEngine::spawnEntity(Vec2 RangeMin, Vec2 RangeMax, bool complex, unsigned char *takenMap){ // byte array
+     unsigned char check[8] {};
 
-   return (entityX > SCR_W || entityY > SCR_H || entityX < 0 || entityY < 0);
+    if(complex && takenMap){
+        m_Entity.x = random(RangeMin.x, RangeMax.x);
+        m_Entity.y = random(RangeMin.y, RangeMax.y);
+
+        for(int i = 0; i < 8; ++i){
+
+            if(*(takenMap + m_Entity.x) == B11111111){
+                m_Entity.x = random(RangeMin.x, RangeMax.x);
+                continue;
+            }
+            else if(*(takenMap + m_Entity.x)){
+                check[i] = *(takenMap + m_Entity.x) & (1 << i);
+
+                    if(m_Entity.y && !check[i])
+                        return m_Entity;
+
+                m_Entity.y = random(RangeMin.y, RangeMax.y);
+            }
+            else
+                return m_Entity;
+        }   
+        
+    }
+
+    else{
+        m_Entity.x = random(RangeMin.x, RangeMax.x);
+        m_Entity.y = random(RangeMin.y, RangeMax.y);   
+      //  scrSetLED(m_Entity.x, m_Entity.y, true);
+    }
+    return m_Entity;
+}
+
+//unsigned long cbool timerRNG, unsigned int timerMin = 0, unsigned int timerMax = 0, bool timerFaster = false, unsigned int timerSlowDown = 0
+
+
+bool GameEngine::detectCollision(Vec2 Entity1, Vec2 Entity2){
+
+    return Entity1.x == Entity2.x && Entity1.y == Entity2.y;
+}
+
+bool GameEngine::isEntityDeleted(Vec2 Entity) {
+
+   return (Entity.x> SCR_W || Entity.y > SCR_H || Entity.x < 0 || Entity.x < 0);
 }
 
 
-void GameEngine::wrapAround(int& posX, int& posY){
+Vec2 GameEngine::wrapAround(Vec2 Entity){
 
     // Wrap Around if greather than screen width or height
-    posX = posX > SCR_W-1 ? 0 : posX;
-    posY = posY > SCR_H-1 ? 0 : posY;
+    Entity.x = Entity.x > SCR_W-1 ? 0 : Entity.x;
+    Entity.y = Entity.y > SCR_H-1 ? 0 : Entity.y;
 
     // Wrap Around if less than screen width or height
-    posX = posX < 0 ? SCR_W - 1 : posX;
-    posY = posY < 0 ? SCR_H - 1 : posY;
+    Entity.x = Entity.x < 0 ? SCR_W - 1 : Entity.x;
+    Entity.y = Entity.y < 0 ? SCR_H - 1 : Entity.y;
+
+    return Entity;
 }
 
 
@@ -72,13 +174,13 @@ void GameEngine::gameOver(){
         for(int column{0}; column < SCR_H; ++column)
             scrSetLED(row, column, true);
 
-        scrDraw();
+    scrDraw();
 
     for(int row{7}; row >= 0; --row)
         for(int column{31}; column >= 0; --column)
             scrSetLED(row, column, false);
 
-        scrDraw();
+    scrDraw();
 
         for(int device{0}; device < NUM_OF_LED; ++device){
             switch(device){
