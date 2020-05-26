@@ -49,13 +49,13 @@ private:
     Vec2 m_Entity = {0,0};
     int m_entityX {0};
     int m_entityY {0};
-    OS::Games m_oldGame {OS::Games::E_INVADERS};
+    OS::GameToSwitch m_oldGame {OS::GameToSwitch::E_INVADERS};
 
 public:
-    void runGame(OS::Games currentGame);
+    void runGame(OS::GameToSwitch currentGame);
 
     virtual Vec2 computePlayerPos(Movement iMovement, Vec2 Player, int inputX, int inputY, int scalar = 1, bool oneAxis = false);
-    virtual unsigned long computeRNGTimer(unsigned int iMin, unsigned int iMax, bool faster = false, unsigned int slowDown = 0);
+    virtual unsigned long computeRNGTimer(unsigned int iMin, unsigned int iMax, bool faster = false, unsigned int rapidIterate = 0, float bareMin = 0.26);
     virtual Vec2 spawnEntity(Vec2 RangeMin, Vec2 RangeMax, bool complex = false, unsigned char *takenMap = nullptr);
     virtual bool detectCollision(Vec2 Entity1, Vec2 Entity2);
     virtual bool isEntityDeleted(Vec2 Entity);

@@ -1,18 +1,6 @@
 #include "OS.h"
 #include "game.h"
 
-// I should probably change this set-up, but all well. It works. ¯\_(ツ)_/¯
-
-unsigned char G[] = {B00000000,B00111110,B00100000,B00100000,B00101110,B00100010,B00111110,B00000000};
-unsigned char A[] = {B00000000,B00111100,B01100110,B01100110,B01111110,B01100110,B01100110,B01100110};
-unsigned char M[] = {B00000000,B00000000,B01000100,B10101010,B10010010,B10000010,B10000010,B00000000};
-unsigned char E[] = {B00000000,B00111100,B00100000,B00111000,B00100000,B00100000,B00111100,B00000000};
-unsigned char I[] = {B00000000,B00111000,B00010000,B00010000,B00010000,B00010000,B00111000,B00000000};
-unsigned char O[] = {B00000000,B00111100,B01000010,B01000010,B01000010,B01000010,B00111100,B00000000};
-unsigned char T[] = {B00000000,B01111100,B00010000,B00010000,B00010000,B00010000,B00010000,B00000000};
-unsigned char V[] = {B00000000,B00100010,B00100010,B00100010,B00010100,B00010100,B00001000,B00000000};
-unsigned char R[] = {B00000000,B00111000,B00100100,B00100100,B00111000,B00100100,B00100100,B00000000};
-unsigned char X[] = {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100,B01000010,B00000000};
 
 /* * * * * * * * *
  * 				        
@@ -20,29 +8,74 @@ unsigned char X[] = {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100
  * 				        
  * * * * * * * * */
 
-void OS::update(unsigned int dT){
+void OS::init(){
+  // Set old frametime to millis for updateOS() to use.
+  m_frameOld = millis();
+}
 
-  // Screen Clear, and compute I/O States
+void OS::updateOS(){
+
+// Frame Handling pt. 1
+  m_frameStart = millis();
+  m_frame_dT = m_frameStart - m_frameOld;
+  m_frameOld = m_frameStart;
+
+// Screen Clear, and compute I/O States
   scrClear();
-  computeBtnStates(dT);
+  computeBtnStates(m_frame_dT);
   customJoyX(127, -127);
   customJoyY(127, -127);
 }
 
-void OS::update2(){
+void OS::updateOS2(){
 
-  // Screen Draw
-  profilingLED();
+// Draw to screen with byte arrays
   scrDraw();
+
+  // Frame Handling pt. 2
+  unsigned long frameDuration {millis() - m_frameStart};
+
+  if(m_fpsTarget > frameDuration)
+    delay(m_fpsTarget - frameDuration);
 }
 
-//  Run Video Game
-  //GameHandler->runGame(changeGame(GameHandler, 2000););
-   // Check if game is changed??
-//  updatePosition(*this);
+/* * * * * * * *  *
+ * 				        
+ * OS GAME METHODS 
+ * 				        
+ * * * * * * * * */
 
- // printJoy(OS::E_VERBOSE);
- // printBtn(OS::E_VERBOSE);
+
+OS::GameToSwitch OS::changeGame(unsigned int changeTime, bool inSeconds){
+  
+  static short s_gameIndex {0};
+  changeTime = inSeconds ? changeTime * 1000 : changeTime;
+
+  if(m_btnIsToggled && m_btnIsPressedTime > changeTime){
+    s_gameIndex++;
+    s_gameIndex % m_gamesLoaded;
+    OS::GameToSwitch gameSel = m_gameList[s_gameIndex];
+   // delete Game;
+
+    switch(gameSel){
+
+      case(GameToSwitch::E_SNAKE):
+        // Game = new SnakeGame(); 
+        return GameToSwitch::E_SNAKE;
+        break;
+
+      case(GameToSwitch::E_INVADERS):
+        // Game = new InvadersGame();
+        return GameToSwitch::E_INVADERS;
+        break;
+
+       case(GameToSwitch::E_NO_SWITCH):
+        return GameToSwitch::E_NO_SWITCH;
+        break;
+    }
+  }
+  return GameToSwitch::E_NO_SWITCH;
+}
 
 
 /* * * * * * * *  *
@@ -63,30 +96,29 @@ void OS::scrBootUpAnim(){
   OS::buzzer(392, 240, 320);
   OS::buzzer(494, 640, 700);
 
-  for(int device{0}; device < NUM_OF_LED; ++device){
+  for(int device{0}; device < _NUM_OF_LED; ++device){
     switch(device){
 
       case(0):
-        scrDraw2(device, M);
+        scrDraw2(device, X);
         break;
 
       case(1):
-        scrDraw2(device, A);
-        break;
-
-      case(2):
         scrDraw2(device, T);
         break;
 
+      case(2):
+        scrDraw2(device, A);
+        break;
+
       case(3):
-        scrDraw2(device, X);
+        scrDraw2(device, M);
         break;
       }
   }
 
-    delay(1000);
+    delay(2500);
     scrClear2();
-  
   
 for(int matrix = 0; matrix < m_NUM_OF_LED; ++matrix){
     OS::buzzer(494, 50);
@@ -139,7 +171,7 @@ void OS::scrBootOffAnim(){
     } 
   }
 
-  for(int device{0}; device < NUM_OF_LED; ++device){
+  for(int device{0}; device < _NUM_OF_LED; ++device){
     switch(device){
 
       case(0):
@@ -200,8 +232,6 @@ void OS::scrClear(){
   }
 }
 
-
-
 void OS::scrClear2(){
 
     for(int addr {0}; addr < m_NUM_OF_LED; ++addr){
@@ -236,7 +266,7 @@ void OS::scrSetLED(int iX, int iY, bool state){
   
     break;
 
-    default:
+    case(false):
     if(iX > 23)
       m_pixelsA[abs(iY-7)] &= ~(1 << abs(iX - 24 - 7));
   
@@ -288,7 +318,7 @@ void OS::scrDraw(){
 void OS::scrDraw2(int device, unsigned char* array){
 
   for(int row {0}; row < 8; ++row)
-    LedMatrix.setRow(device, row, *(array+row));
+    LedMatrix.setRow(device, row, array[row]);
 }
 
 
@@ -342,20 +372,21 @@ int OS::customJoyY(float max, float min, int threshold){
 // Checks if button is double tapped
 // Checks how long button is held for
 
-bool isToggled = false;
+
 
 void OS::computeBtnStates(int dT){
-  
+
+  static bool s_isToggled = false;
   bool btnOld = m_btnIsPressed;
   m_btnIsPressed = digitalRead(m_btnPin);
   bool btnPressedThisCycle = m_btnIsPressed && (m_btnIsPressed != btnOld);
 
-  if(!isToggled && btnPressedThisCycle){
+  if(!s_isToggled && btnPressedThisCycle){
       m_btnIsToggled = 1 - m_btnIsToggled;
-      isToggled = !isToggled;
+      s_isToggled = !s_isToggled;
   }
   else{
-    isToggled = 0;
+    s_isToggled = 0;
   }
 
 
@@ -400,7 +431,7 @@ void OS::buzzer(short freq, unsigned short time, unsigned int iDelay){
  // Debug Methods
  // Prints to Serial terminal
 
-void OS::printJoy(DebugLevel debuglvl){
+void OS::printJoy (DebugLevel debuglvl) const{
 
   switch(debuglvl){
 
@@ -426,7 +457,7 @@ void OS::printJoy(DebugLevel debuglvl){
   }
 }
 
-void OS::printBtn(DebugLevel debuglvl){
+void OS::printBtn(DebugLevel debuglvl) const{
 
   switch(debuglvl){
 
@@ -450,7 +481,7 @@ void OS::printBtn(DebugLevel debuglvl){
   }
 }
 
-void OS::printBuzz(DebugLevel debuglvl){
+void OS::printBuzz(DebugLevel debuglvl) const{
 
   switch(debuglvl){
   
@@ -469,7 +500,7 @@ void OS::printBuzz(DebugLevel debuglvl){
   }
 }
 
-void OS::printLEDMatrix(DebugLevel debuglvl){
+void OS::printLEDMatrix(DebugLevel debuglvl) const{
 
   switch(debuglvl){
     
@@ -504,25 +535,27 @@ void OS::printLEDMatrix(DebugLevel debuglvl){
 void OS::profilingLED(){
 
   // Bit Wise:
-
+  
   unsigned long start = millis();
   
-  int x = random(0, 31);
-  int y = random(0, 7);
-  scrSetLED(x,y,true);
-  int x2 = random(0, 31);
-  int y2 = random(0, 7);
-  scrSetLED(x2,y2,false);
+    int x = 5;
+    int y = 5;
+    scrSetLED(x,y,true);
+    int x2 = random(0, 31);
+    int y2 = random(0, 7);
+    scrSetLED(x2,y2,false);
 
   scrDraw();
 
   unsigned long end = millis();
   unsigned long dT = end - start;
+  
 
   Serial.print("Using Bit Manipulation (Execution Time): "); Serial.print(dT); Serial.print('\n');
+  
 
   // Non Bit-Wise:
-
+  
   unsigned long start2 = millis();
 
   int x3 = random(0, 31);
@@ -537,36 +570,5 @@ void OS::profilingLED(){
 
   Serial.print("Not Bit Manipulation (Execution Time): "); Serial.print(dT2); Serial.print('\n');
   
-}
-
-
-OS::Games OS::changeGame(unsigned int changeTime, bool inSeconds){
   
-  static short gameIndex {0};
-  changeTime = inSeconds ? changeTime * 1000 : changeTime;
-
-  if(m_btnIsToggled && m_btnIsPressedTime > changeTime){
-    gameIndex++;
-    gameIndex % m_gamesLoaded;
-    OS::Games gameSel = m_gameList[gameIndex];
-   // delete Game;
-
-    switch(gameSel){
-
-      case(Games::E_SNAKE):
-        // Game = new SnakeGame(); 
-        return Games::E_SNAKE;
-        break;
-
-      case(Games::E_INVADERS):
-        // Game = new InvadersGame();
-        return Games::E_INVADERS;
-        break;
-
-       case(Games::E_ERR):
-        return Games::E_ERR;
-        break;
-    }
-  }
-  return Games::E_ERR;
 }

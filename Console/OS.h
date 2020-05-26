@@ -3,41 +3,49 @@
 #include "Arduino.h"
 
 // ERROR CODES
-#define ERR 4294967295;
-// DEFINES
-#define SCR_W 32
-#define SCR_H 8
-#define DIN_PIN 9
-#define CS_PIN 8
-#define CLK_PIN 10
-#define NUM_OF_LED 4
-#define BTN_PIN 4
-#define LDR_PIN A0
-#define BUZZ_PIN 2
-#define JOYX_PIN 3
-#define JOYY_PIN 5
-#define JOYZ_PIN 1
+#define _ERR_MAX 4294967295;
+
+//SIZES
+inline constexpr unsigned short _BYTE {8};
+
+// DEVICE CONSTANTS
+inline constexpr unsigned short _SCR_W {32};
+inline constexpr unsigned short _SCR_H {8};
+inline constexpr unsigned short _DIN_PIN {9};
+inline constexpr unsigned short _CS_PIN {8};
+inline constexpr unsigned short _CLK_PIN {10};
+inline constexpr unsigned short _NUM_OF_LED {4};
+inline constexpr unsigned short _BTN_PIN {4};
+inline constexpr unsigned short _LDR_PIN {0};
+inline constexpr unsigned short _BUZZ_PIN {2};
+inline constexpr unsigned short _JOYX_PIN {3};
+inline constexpr unsigned short _JOYY_PIN {5};
+inline constexpr unsigned short _JOYZ_PIN {1};
+inline constexpr unsigned short _GAME_COUNT {2};
+
 
 // Global Byte Arrays for letters on matrices.
-extern unsigned char G[];
-extern unsigned char A[];
-extern unsigned char M[];
-extern unsigned char E[];
-extern unsigned char I[];
-extern unsigned char O[];
-extern unsigned char T[];
-extern unsigned char V[];
-extern unsigned char R[];
-extern unsigned char X[];
+// I should probably change this set-up, but all well. It works. ¯\_(ツ)_/¯
+
+inline constexpr unsigned char A[_BYTE] {B00000000,B00111100,B00100100,B00100100,B00111100,B00100100,B00100100,B00000000};
+inline constexpr unsigned char E[_BYTE] {B00000000,B00111100,B00100000,B00111000,B00100000,B00100000,B00111100,B00000000};
+inline constexpr unsigned char G[_BYTE] {B00000000,B00111110,B00100000,B00100000,B00101110,B00100010,B00111110,B00000000};
+inline constexpr unsigned char I[_BYTE] {B00000000,B00111000,B00010000,B00010000,B00010000,B00010000,B00111000,B00000000};
+inline constexpr unsigned char M[_BYTE] {B00000000,B01000100,B10101010,B10010010,B10010010,B10000010,B10000010,B00000000};
+inline constexpr unsigned char O[_BYTE] {B00000000,B00111100,B01000010,B01000010,B01000010,B01000010,B00111100,B00000000};
+inline constexpr unsigned char R[_BYTE] {B00000000,B00111000,B00100100,B00100100,B00111000,B00100100,B00100100,B00000000};
+inline constexpr unsigned char T[_BYTE] {B00000000,B01111100,B00010000,B00010000,B00010000,B00010000,B00010000,B00000000};
+inline constexpr unsigned char V[_BYTE] {B00000000,B00100010,B00100010,B00100010,B00010100,B00010100,B00001000,B00000000};
+inline constexpr unsigned char X[_BYTE] {B00000000,B01000010,B00100100,B00011000,B00011000,B00100100,B01000010,B00000000};
 
 
 class OS {
 public:
 
-	enum class Games{
-	E_SNAKE = 0,
-	E_INVADERS,
-	E_ERR
+	enum class GameToSwitch{
+		E_SNAKE = 0,
+		E_INVADERS,
+		E_NO_SWITCH
 	};
 
 private:
@@ -75,10 +83,10 @@ private:
 	// Byte arrays of pixels. A,B,C,D represent Matrices and their addresses
 	// (i,e: A = 0, B = 1)
 
-	unsigned char m_pixelsA[8];
-	unsigned char m_pixelsB[8]; 
-	unsigned char m_pixelsC[8];
-	unsigned char m_pixelsD[8];
+	unsigned char m_pixelsA[_BYTE]{};
+	unsigned char m_pixelsB[_BYTE]{}; 
+	unsigned char m_pixelsC[_BYTE]{};
+	unsigned char m_pixelsD[_BYTE]{};
 
 	// LedControl lib object (for setting pixels and related methods)
 
@@ -105,18 +113,32 @@ private:
  	*  	   MISC      
 	*  INTERNAL DATA 	       		 	  	        					
  	* * * * * * * * */
- 	// Games m_oldGame {Games::E_SNAKE};
+ 	
  	 const int m_gamesLoaded;
+	 unsigned long m_dblTimer {0};
  	 unsigned long m_frame_dT {0};
  	 unsigned int m_fpsMax {60};
-	 unsigned long m_dblTimer {0};
 	 unsigned int m_fpsTarget {1000/m_fpsMax};
-	 unsigned long m_frameOld;
+	 unsigned long m_frameStart{0};
+	 unsigned long m_frameOld{0};
 	 bool m_isToggle = false;
-   static const Games m_gameList[2] {Games::E_SNAKE, Games::E_INVADERS};
+   const GameToSwitch m_gameList[2] {GameToSwitch::E_SNAKE, GameToSwitch::E_INVADERS};
 
 
 public:
+
+/**
+ * Frame handling intialize method
+ *
+ * Sets m_frameOld to millis() at console start.
+ *
+ * @param void
+ * 
+ * @return void-
+ */
+
+void init();
+
 
 /* * * * * * * * *
  * 				  
@@ -137,7 +159,7 @@ public:
  */
 
 
-void update(unsigned int dT); 
+void updateOS(); 
 
 /**
  * Update2 Method
@@ -151,7 +173,30 @@ void update(unsigned int dT);
  * @return void-
  */
 
-void update2();
+void updateOS2();
+
+
+/* * * * * * * *  *
+ * 				        
+ * OS GAME METHODS 
+ * 				        
+ * * * * * * * * */
+
+/**
+ * Change Game Method
+ *
+ * 
+ * Handles debugging and screen drawing
+ * Takes in the final byte data for pixels, and outputs it on screen.
+ *
+ * @param changeTime uint -> How long you want to hold button to switch game (in milliseconds or seconds)
+ * @param inSeconds bool -> Whether you want to input changeTime as seconds or not (True for seconds, False for ms)
+ * 
+ * @return Games of type Enum class Games. The game to switch to, or E_NO_SWITCH to indicate no switch.
+ */
+
+
+OS::GameToSwitch changeGame(unsigned int changeTime, bool inSeconds = false);
 
 
 /* * * * * * * *  *
@@ -415,7 +460,7 @@ void buzzer(short freq, unsigned short time, unsigned int iDelay = 0);
  * @return m_joyX
  */
 
-int getJoyX() { return m_joyX; }
+int getJoyX() const { return m_joyX; }
 
 /**
  * Get Joystick Y Input
@@ -427,7 +472,7 @@ int getJoyX() { return m_joyX; }
  * @return m_joyY
  */
 
-int getJoyY() { return m_joyY; }
+int getJoyY() const { return m_joyY; }
 
 /**
  * Get Joystick Z Input
@@ -441,7 +486,7 @@ int getJoyY() { return m_joyY; }
  * @return analogRead(m_joyZPin) --> Range of [0 - 1023]
  */
 
-int getJoyZ() { return analogRead(m_joyYPin);}
+int getJoyZ() const { return analogRead(m_joyYPin);}
 
 /**
  * Get Button Pressed Input
@@ -453,7 +498,7 @@ int getJoyZ() { return analogRead(m_joyYPin);}
  * @return m_btnIsPressed --> Boolean. True if pressed. False if not.
  */
 
-bool getBtnPressed() { return m_btnIsPressed; }
+bool getBtnPressed() const { return m_btnIsPressed; }
 
 /**
  * Get Button Toggled Input
@@ -465,7 +510,7 @@ bool getBtnPressed() { return m_btnIsPressed; }
  * @return m_btnIsToggled --> Boolean. True if toggled. False if not.
  */
 
-bool getBtnToggled() { return m_btnIsToggled; }
+bool getBtnToggled() const { return m_btnIsToggled; }
 
 /**
  * Get Button Double-Tapped Input
@@ -477,7 +522,7 @@ bool getBtnToggled() { return m_btnIsToggled; }
  * @return m_btnIsDoubleTapped --> Boolean. True if Double-Tapped. False if not.
  */
 
-bool getBtnDoubleTap() { return m_btnIsDoubleTapped; }
+bool getBtnDoubleTap() const { return m_btnIsDoubleTapped; }
 
 /**
  * Get Button Pressed time
@@ -489,7 +534,7 @@ bool getBtnDoubleTap() { return m_btnIsDoubleTapped; }
  * @return m_btnIsPressedTime --> uint long.
  */
 
-unsigned long getBtnPressedTime() { return m_btnIsPressedTime; }
+unsigned long getBtnPressedTime() const { return m_btnIsPressedTime; }
 
 /**
  * Get FPS Max
@@ -501,7 +546,7 @@ unsigned long getBtnPressedTime() { return m_btnIsPressedTime; }
  * @return m_fpsMax --> uint.
  */
 
-unsigned int getFPSMax() { return m_fpsMax; }
+unsigned int getFPSMax() const { return m_fpsMax; }
 
 /**
  * Get FPS target
@@ -513,7 +558,7 @@ unsigned int getFPSMax() { return m_fpsMax; }
  * @return m_fpsTarget --> uint.
  */
 
-unsigned int getFPSTarget() { return m_fpsTarget; }
+ unsigned int getFPSTarget() const { return m_fpsTarget; }
 
 /**
  * Gets Frame Delta Time
@@ -525,7 +570,7 @@ unsigned int getFPSTarget() { return m_fpsTarget; }
  * @return m_frame_dT --> uint long.
  */
 
-unsigned long getFrame_dT() { return m_frame_dT; }
+ unsigned long getFrame_dT() const { return m_frame_dT; }
 
 /**
  * Gets Old Frame Time
@@ -537,7 +582,7 @@ unsigned long getFrame_dT() { return m_frame_dT; }
  * @return m_frameOld --> uint long.
  */
 
-unsigned long getTimeOld() { return m_frameOld; }
+ unsigned long getTimeOld() const { return m_frameOld; }
 
 
 //  Setters
@@ -551,7 +596,7 @@ unsigned long getTimeOld() { return m_frameOld; }
  * @return void
  */
 
-void setJoyX(int x) { m_joyX = x; }
+ void setJoyX(int x) { m_joyX = x; }
 
 /**
  * Set Joystick Y input
@@ -562,7 +607,7 @@ void setJoyX(int x) { m_joyX = x; }
  * @return void
  */
 
-void setJoyY(int y) { m_joyY = y; }
+ void setJoyY(int y) { m_joyY = y; }
 
 /**
  * Set whether the Button is pressed
@@ -573,7 +618,7 @@ void setJoyY(int y) { m_joyY = y; }
  * @return void
  */
 
-void setBtnPressed(bool state) { m_btnIsPressed = state; }
+  void setBtnPressed(bool state) { m_btnIsPressed = state; }
 
 /**
  * Set whether the Button is toggled
@@ -584,7 +629,7 @@ void setBtnPressed(bool state) { m_btnIsPressed = state; }
  * @return void
  */
 
-void setBtnToggled(bool state) { m_btnIsToggled = state; }
+ void setBtnToggled(bool state) { m_btnIsToggled = state; }
 
 /**
  * Set whether the Button is Double-Tapped
@@ -595,7 +640,7 @@ void setBtnToggled(bool state) { m_btnIsToggled = state; }
  * @return void
  */
 
-void setBtnDoubleTap(bool state) { m_btnIsDoubleTapped = state; }
+ void setBtnDoubleTap(bool state) { m_btnIsDoubleTapped = state; }
 
 /**
  * Set how long the button is pressed
@@ -606,7 +651,7 @@ void setBtnDoubleTap(bool state) { m_btnIsDoubleTapped = state; }
  * @return void
  */
 
-void setBtnPressedTime(unsigned long time) { m_btnIsPressedTime = time; }
+ void setBtnPressedTime(unsigned long time) { m_btnIsPressedTime = time; }
 
 /**
  * Set the dT between frame times
@@ -617,7 +662,7 @@ void setBtnPressedTime(unsigned long time) { m_btnIsPressedTime = time; }
  * @return void
  */
 
-void setFrame_dT(unsigned long timeDT) { m_frame_dT = timeDT; }
+ void setFrame_dT(unsigned long timeDT) { m_frame_dT = timeDT; }
 
 /**
  * Set the time of the old frame
@@ -628,7 +673,7 @@ void setFrame_dT(unsigned long timeDT) { m_frame_dT = timeDT; }
  * @return void
  */
 
-void setTimeOld(unsigned long timeOld) { m_frameOld = timeOld; }
+ void setTimeOld(unsigned long timeOld) { m_frameOld = timeOld; }
 
 /**
  * Set the FPS Maximum
@@ -671,7 +716,7 @@ enum DebugLevel{
  * @return void
  */
 
-void printJoy(DebugLevel debuglvl = E_NORMAL);
+void printJoy(DebugLevel debuglvl = E_NORMAL) const;
 
 /** Print Button
  * 
@@ -684,7 +729,7 @@ void printJoy(DebugLevel debuglvl = E_NORMAL);
  *
  */ 
 
-void printBtn(DebugLevel debuglvl = E_NORMAL);
+void printBtn(DebugLevel debuglvl = E_NORMAL) const;
 
 /** Print Button
  * 
@@ -697,7 +742,7 @@ void printBtn(DebugLevel debuglvl = E_NORMAL);
  *
  */ 
 
-void printBuzz(DebugLevel debuglvl = E_NORMAL);
+void printBuzz(DebugLevel debuglvl = E_NORMAL) const;
 
 /** Print LED Matrix
  * 
@@ -710,7 +755,7 @@ void printBuzz(DebugLevel debuglvl = E_NORMAL);
  *
  */ 
 
-void printLEDMatrix(DebugLevel debuglvl = E_NORMAL);
+void printLEDMatrix(DebugLevel debuglvl = E_NORMAL) const;
 
 // Methods for Benchmarking
 
@@ -728,10 +773,6 @@ void printLEDMatrix(DebugLevel debuglvl = E_NORMAL);
 void profilingLED();
 
 
-Games changeGame(unsigned int changeTime, bool inSeconds = false);
-
-
-
 /* * * * * * * * * *
  * 				   
  *   CONSTRUCTORS  
@@ -743,34 +784,33 @@ Games changeGame(unsigned int changeTime, bool inSeconds = false);
 // Default Constructor
 
 OS::OS() 
-:
-LedMatrix(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED),
-m_scrW(SCR_W), m_scrH(SCR_H),
-m_dinPin(DIN_PIN), m_csPin(CS_PIN), m_clkPin(CLK_PIN),
-m_NUM_OF_LED(NUM_OF_LED), m_btnPin(BTN_PIN), // m_ldrPin(LDR_PIN)
-m_buzzPin(BUZZ_PIN),
-m_joyXPin(JOYX_PIN), m_joyYPin(JOYY_PIN), m_joyZPin(JOYZ_PIN),
-m_gamesLoaded(2)
+  :
+  LedMatrix(_DIN_PIN, _CLK_PIN, _CS_PIN, _NUM_OF_LED),
+  m_scrW(_SCR_W), m_scrH(_SCR_H),
+  m_dinPin(_DIN_PIN), m_csPin(_CS_PIN), m_clkPin(_CLK_PIN),
+  m_NUM_OF_LED(_NUM_OF_LED), m_btnPin(_BTN_PIN), // m_ldrPin(LDR_PIN)
+  m_buzzPin(_BUZZ_PIN),
+  m_joyXPin(_JOYX_PIN), m_joyYPin(_JOYY_PIN), m_joyZPin(_JOYZ_PIN),
+  m_gamesLoaded(_GAME_COUNT)
 
 {
-	  //  LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
       	  pinMode(m_btnPin, INPUT);
-     //   pinMode(m_ldrPin, INPUT);
+        //pinMode(m_ldrPin, INPUT);
       	  pinMode(m_buzzPin, OUTPUT);
-	      scrClear();
-	      m_frameOld = millis();
+	        scrClear();
+	        m_frameOld = millis();
 } 
 
+// Alternate constructor, to initialize things yourself
 
-
-OS::OS (const int iScrW, const int iScrH,
-	const int iDinPin, const int iCsPin, const int iClkPin,
-	const int iNumOfLED, const int iBtnPin, const int iBuzzPin,
-	const int iJoyXpin, const int iJoyYpin, const int iJoyZpin,
-	const int iGamesLoaded
+OS::OS (int iScrW, int iScrH,
+	int iDinPin, int iCsPin, int iClkPin,
+	int iNumOfLED, int iBtnPin, int iBuzzPin,
+	int iJoyXpin, int iJoyYpin, int iJoyZpin,
+	int iGamesLoaded
 	) 
 	:	
-  LedMatrix(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED),
+  LedMatrix(iDinPin, iClkPin, iCsPin, iNumOfLED),
 	m_scrW(iScrW), m_scrH(iScrH),
 	m_dinPin(iDinPin), m_csPin(iCsPin), m_clkPin(iClkPin),
 	m_NUM_OF_LED(iNumOfLED), m_btnPin(iBtnPin), // m_ldrPin(LDR_PIN)
@@ -779,9 +819,9 @@ OS::OS (const int iScrW, const int iScrH,
 	m_gamesLoaded(iGamesLoaded)
 
 {
-	  //	LedMatrix = LedControl(DIN_PIN, CLK_PIN, CS_PIN, NUM_OF_LED);
+	
       		pinMode(m_btnPin, INPUT);
-    //  	pinMode(m_ldrPin, INPUT);
+          //pinMode(m_ldrPin, INPUT);
       		pinMode(m_buzzPin, OUTPUT);
 	      	scrClear();
 	      	m_frameOld = millis();

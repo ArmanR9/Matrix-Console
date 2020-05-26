@@ -2,11 +2,9 @@
 #include "OS.h"
 #include "game.h"
 
-
 // Intialize Global Objects
-// Default Ctor
-OS MatrixOS;
-GameEngine testEngine;
+OS MatrixOS; 
+GameEngine *testEngine = new GameEngine;
 
 
 // Intialize function
@@ -18,9 +16,28 @@ void setup() {
 
   MatrixOS.scrInit();
   MatrixOS.scrBrightness(1);
- // GameOS.scrBootUpAnim();  // Enable/Disable Screen Boot Up Animation
-  MatrixOS.setTimeOld(millis());
+ // MatrixOS.scrBootUpAnim(); // Enable/Disable Screen Boot Up Animation
+  MatrixOS.init();
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+  Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+  Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+   Serial.print('\n');
+  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
   
+  delay(100000);
 }
 
 
@@ -28,19 +45,15 @@ void setup() {
 
 void loop() {
 
-   // Frame Handling
-  unsigned long frameStart { millis() };
-  unsigned long dT {frameStart - MatrixOS.getTimeOld()};
-  MatrixOS.setTimeOld(frameStart);
-  MatrixOS.setFrame_dT(dT);
-   
-  MatrixOS.update(MatrixOS.getFrame_dT());
-  //GameHandler->runGame(MatrixOS.changeGame(GameHandler, 2000);
-  MatrixOS.update2();
-  
-  // Frame Handling pt2:
-  unsigned long int frameDuration {millis() - frameStart};
+  MatrixOS.updateOS();
+  // Do Game Stuff
+  MatrixOS.updateOS2();
 
-  if(MatrixOS.getFPSTarget() > frameDuration)
-    delay(MatrixOS.getFPSTarget() - frameDuration);
+  // Debug
+
+  /*
+  MatrixOS.printBtn(OS::DebugLevel::E_VERBOSE);
+  delay(1000);
+  MatrixOS.printJoy(OS::DebugLevel::E_VERBOSE);
+  */
 }
