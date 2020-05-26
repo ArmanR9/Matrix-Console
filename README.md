@@ -8,4 +8,5 @@ Small little mini console utilizing the main components which are...
 - Digital Button
 
 This was just a project to try and learn and introduce myself to creating very simple 2D games in C++!
+
 **Project Inspiration:** Sebastian Lague https://www.youtube.com/watch?v=TURzbXTNaA0
