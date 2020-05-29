@@ -4,7 +4,7 @@
 
 // Intialize Global Objects
 OS MatrixOS; 
-GameEngine *testEngine = new GameEngine;
+GameEngine *MatrixGEng = new GameEngine(2);
 
 
 // Intialize function
@@ -14,40 +14,24 @@ void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0));
 
-  MatrixOS.scrInit();
-  MatrixOS.scrBrightness(1);
+  MatrixOS.Scr.init();
+  MatrixOS.Scr.brightness(1);
  // MatrixOS.scrBootUpAnim(); // Enable/Disable Screen Boot Up Animation
   MatrixOS.init();
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-  Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-  Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
-   Serial.print('\n');
-  Serial.println(testEngine->computeRNGTimer(2000, 2001, true, 5));
+ // MatrixGEng->compute
+  
   
   delay(100000);
 }
 
 
 // Main looping function
-
+  
 void loop() {
 
-  MatrixOS.updateOS();
+  MatrixOS.update();
   // Do Game Stuff
-  MatrixOS.updateOS2();
+  MatrixOS.update2();
 
   // Debug
 

@@ -2,9 +2,9 @@
 
 
 
-void GameEngine::runGame(OS::GameToSwitch currentGame){
+void GameEngine::runGame(GameToSwitch currentGame){
 
-    if(currentGame == OS::GameToSwitch::E_NO_SWITCH){
+    if(currentGame == GameToSwitch::E_NO_SWITCH){
         // just update
         int i = 0;
     }
@@ -13,12 +13,12 @@ void GameEngine::runGame(OS::GameToSwitch currentGame){
         //  delete this;
 
             switch(currentGame){
-                case(OS::GameToSwitch::E_SNAKE):
+                case(GameToSwitch::E_SNAKE):
                     //this = Snake();
                     m_oldGame = GameToSwitch::E_SNAKE; 
                     break;
 
-                case(OS::GameToSwitch::E_INVADERS):
+                case(GameToSwitch::E_INVADERS):
                     // this = Invaders();
                     m_oldGame = GameToSwitch::E_INVADERS;
                     break;
@@ -28,12 +28,43 @@ void GameEngine::runGame(OS::GameToSwitch currentGame){
     }
 }
 
+GameEngine::GameToSwitch GameEngine::changeGame(bool isToggled, unsigned long btnPressedTime, unsigned int changeTime, bool inSeconds){
+  
+  static short s_gameIndex {0};
+  changeTime = inSeconds ? changeTime * 1000 : changeTime;
+
+  if(isToggled && btnPressedTime > changeTime){
+    s_gameIndex++;
+    s_gameIndex % m_gamesLoaded;
+    GameToSwitch gameSel = m_gameList[s_gameIndex];
+   // delete Game;
+
+    switch(gameSel){
+
+      case(GameToSwitch::E_SNAKE):
+        // Game = new SnakeGame(); 
+        return GameToSwitch::E_SNAKE;
+        break;
+
+      case(GameToSwitch::E_INVADERS):
+        // Game = new InvadersGame();
+        return GameToSwitch::E_INVADERS;
+        break;
+
+       case(GameToSwitch::E_NO_SWITCH):
+        return GameToSwitch::E_NO_SWITCH;
+        break;
+    }
+  }
+  return GameToSwitch::E_NO_SWITCH;
+}
 
 
-Vec2 GameEngine::computePlayerPos(Movement iMovement, Vec2 Player, int inputX, int inputY, int scalar, bool oneAxis){
+Vec2 GameEngine::computePlayerPos(unsigned int dT, Movement iMovement, Vec2 Player, int inputX, int inputY, int scalar, bool oneAxis){
 
     m_dirX = sgn(inputX);
     m_dirY = sgn(inputY);
+    Serial.print(m_dirX);
 
     switch(iMovement){
     
@@ -54,8 +85,8 @@ Vec2 GameEngine::computePlayerPos(Movement iMovement, Vec2 Player, int inputX, i
 
         case(Movement::E_COMPLEX):
 
-            Player.x += m_dirX * inputX * scalar * (getFrame_dT() / 1000.0);
-            Player.y += m_dirY * inputY * scalar * (getFrame_dT() / 1000.0);
+            Player.x += m_dirX * inputX * scalar * (dT / 1000.0);
+            Player.y += m_dirY * inputY * scalar * (dT / 1000.0);
             break;
 
     }
@@ -64,23 +95,24 @@ Vec2 GameEngine::computePlayerPos(Movement iMovement, Vec2 Player, int inputX, i
 
 
 unsigned long GameEngine::computeRNGTimer(unsigned int iMin, unsigned int iMax, bool faster, unsigned int rapidIterate, float bareMin){
+
     if(!iMin || !iMax){
         Serial.print("ERROR: Did not specify iMin and iMax when calling computeRNGTimer"); Serial.print('\n');
         return _ERR_MAX;
     }
 
     if(faster){
-       slowDown = clip(slowDown, 5u, 1u);
+       rapidIterate = clip(rapidIterate, 5u, 1u);
     }
 
     unsigned long t1 = random(iMin, iMax);
     static float s_tFast {0.0f};
-    s_tFast += (s_tFast + slowDown) * 0.01;
+    s_tFast += (s_tFast + rapidIterate) * 0.01;
 
     if(faster){
        s_tFast = s_tFast > 1.0f ? 0.0 : s_tFast;
-       Serial.println(s_tFast);
-       Serial.println(slowDown);
+      // Serial.println(s_tFast);
+      // Serial.println(rapidIterate);
     }
 
     if(s_tFast < bareMin)
@@ -89,6 +121,8 @@ unsigned long GameEngine::computeRNGTimer(unsigned int iMin, unsigned int iMax, 
         return min(t1 * s_tFast, t1);
    
 }
+
+
 void snakeMap(){
 
     unsigned char snakeMap[32] {};
@@ -165,18 +199,19 @@ Vec2 GameEngine::wrapAround(Vec2 Entity){
 }
 
 
-void GameEngine::gameOver(){
-    scrClear();
-    scrClear2();
+void GameEngine::gameOver(OS &Os){
+
+    Os.Scr.clear();
+    Os.Scr.clear2();
     
-    buzzer(300, 1000, 1000);
-    buzzer(100, 750, 750);
-    buzzer(25, 500, 500);
+    Os.Buzz.buzzer(300, 1000, 1000);
+    Os.Buzz.buzzer(100, 750, 750);
+    Os.Buzz.buzzer(25, 500, 500);
 
     // Game Over Animation
     for(int row{0}; row < _SCR_W; ++row)
         for(int column{0}; column < _SCR_H; ++column)
-              scrSetLED2(row,column,true);
+              Os.Scr.setLED2(row,column,true);
           //  scrSetLED(row, column, true);
 
   //  scrDraw();
@@ -184,7 +219,7 @@ void GameEngine::gameOver(){
 
     for(int row{0}; row < _SCR_W; ++row)
        for(int column{0}; column < _SCR_H; ++column)
-              scrSetLED2(row,column,false);
+              Os.Scr.setLED2(row, column, false);
           //  scrSetLED(row, column, false);
 
    // scrDraw();
@@ -193,69 +228,69 @@ void GameEngine::gameOver(){
         for(int device{0}; device < _NUM_OF_LED; ++device){
             switch(device){
                 case(0):
-                 scrDraw2(device, E);
+                    Os.Scr.draw2(device, E);
                  break;
 
                  case(1):
-                 scrDraw2(device, M);
+                    Os.Scr.draw2(device, M);
                  break;
 
                  case(2):
-                 scrDraw2(device, A);
+                    Os.Scr.draw2(device, A);
                  break;
 
                  case(3):
-                 scrDraw2(device, G);
+                    Os.Scr.draw2(device, G);
                  break;
             }
         }
     
     delay(3500);
-    scrClear2();
+    Os.Scr.clear2();
 
     for(int device{0}; device < _NUM_OF_LED; ++device){
             switch(device){
                 case(0):
-                 scrDraw2(device, R);
+                    Os.Scr.draw2(device, R);
                  break;
 
                  case(1):
-                 scrDraw2(device, E);
+                    Os.Scr.draw2(device, E);
                  break;
 
                  case(2):
-                 scrDraw2(device, V);
+                    Os.Scr.draw2(device, V);
                  break;
 
                  case(3):
-                 scrDraw2(device, O);
+                    Os.Scr.draw2(device, O);
                  break;
             }
         }
 
     delay(3500);
-    scrClear2();
+    Os.Scr.clear2();
 
        for(int device{0}; device < _NUM_OF_LED; ++device){
             switch(device){
                 case(0):
-                 scrDraw2(device, X);
+                    Os.Scr.draw2(device, X);
                  break;
 
                  case(1):
-                 scrDraw2(device, T);
+                    Os.Scr.draw2(device, T);
                  break;
 
                  case(2):
-                 scrDraw2(device, A);
+                    Os.Scr.draw2(device, A);
                  break;
 
                  case(3):
-                 scrDraw2(device, M);
+                    Os.Scr.draw2(device, M);
                  break;
             }
         }
 
     delay(3500);
-    scrClear2();
+    Os.Scr.clear2();
 }
