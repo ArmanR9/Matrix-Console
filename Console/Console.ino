@@ -1,11 +1,11 @@
 #include "LedControl.h"
 #include "OS.h"
 #include "game.h"
+#include "snake.h"
 
 // Intialize Global Objects
 OS MatrixOS; 
-GameEngine *MatrixGEng = new GameEngine(2);
-
+GameEngine* MatrixGEng = new Snake();
 
 // Intialize function
 
@@ -16,12 +16,9 @@ void setup() {
 
   MatrixOS.Scr.init();
   MatrixOS.Scr.brightness(1);
- // MatrixOS.scrBootUpAnim(); // Enable/Disable Screen Boot Up Animation
+  MatrixOS.bootUpAnim(); // Enable/Disable Screen Boot Up Animation
   MatrixOS.init();
- // MatrixGEng->compute
-  
-  
-  delay(100000);
+
 }
 
 
@@ -31,13 +28,7 @@ void loop() {
 
   MatrixOS.update();
   // Do Game Stuff
+  MatrixGEng->update(MatrixOS);
   MatrixOS.update2();
 
-  // Debug
-
-  /*
-  MatrixOS.printBtn(OS::DebugLevel::E_VERBOSE);
-  delay(1000);
-  MatrixOS.printJoy(OS::DebugLevel::E_VERBOSE);
-  */
 }

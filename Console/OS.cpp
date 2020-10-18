@@ -38,11 +38,11 @@ void OS::update2(){
     delay(m_fpsTarget - frameDuration);
 }
 
-
-// BOOT-UP
-// and 
-// BOOT-OFF
-// Animations
+/* * * * * * * * *
+ * 				        
+ *   BOOT ANIMS
+ * 				        
+ * * * * * * * * */
 
 void OS::bootUpAnim(){
 
@@ -75,20 +75,22 @@ void OS::bootUpAnim(){
     Scr.clear2();
   
 for(int matrix = 0; matrix < _NUM_OF_LED; ++matrix){
-    Buzz.buzzer(494, 50);
+    Buzz.buzzer(494, 50, 200);
   for(int column = 0; column < _SCR_H; ++column){
     for(int row = 0; row < _SCR_W; ++row){
         Scr.setLEDWrapper(matrix, row, column, true);
     }
+    delay(50);
   }
 }
 
 for(int matrix = 0; matrix < _NUM_OF_LED; ++matrix){
-    Buzz.buzzer(330, 50);
+    Buzz.buzzer(330, 50, 200);
   for(int column = 0; column < _SCR_H; ++column){
     for(int row = 0; row < _SCR_W; ++row){
         Scr.setLEDWrapper(matrix, row, column, false);
       }
+      delay(50);
     }
   }
 

@@ -51,6 +51,13 @@ void Screen::clear2(){
 
 }
 
+/* * * * * * * * *
+ * 				        
+ *  MAIN METHOD FOR 
+ *  MAPPING COORDS 
+ *  TO PIXELS
+ *   				        
+ * * * * * * * * */
 
 #define OUT_OF_RANGE iX > 31 || iX < 0 || iY > 7 || iY < 0 
 
@@ -196,40 +203,55 @@ int Joystick::setJoyY(float max, float min, int threshold){
 // Checks if button is double tapped
 // Checks how long button is held for
 
-unsigned long debounceDelay = 50;
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+int oldReading = 0;
 
 void Button::computeBtnStates(int dT){
 
-  static bool s_isToggled = false;
-  bool btnOld = m_btnIsPressed;
-  m_btnIsPressed = digitalRead(m_btnPin);
-  bool btnPressedThisCycle = m_btnIsPressed && (m_btnIsPressed != btnOld);
+  int reading = digitalRead(m_btnPin);
 
-  if(!s_isToggled && btnPressedThisCycle){
+  if(reading != oldReading)
+    lastDebounceTime = millis();
+
+  if((millis() - lastDebounceTime) > debounceDelay){
+    static bool s_isToggled = false;
+    bool btnOld = m_btnIsPressed;
+    m_btnIsPressed = reading;
+    bool btnPressedThisCycle = m_btnIsPressed && (m_btnIsPressed != btnOld);
+
+    if(!s_isToggled && btnPressedThisCycle){
       m_btnIsToggled = 1 - m_btnIsToggled;
       s_isToggled = !s_isToggled;
-  }
-  else{
+    }
+    else{
     s_isToggled = 0;
-  }
+    }
 
 
-  if(btnPressedThisCycle && m_dblTimer > 500){
-    m_btnIsPressedTime = 0;
-    m_dblTimer = 0;
-  }
-  else if(btnPressedThisCycle && m_dblTimer < 500){
-    m_btnIsPressedTime = 0;
-    m_btnIsDoubleTapped = !m_btnIsDoubleTapped; // Set whether the btn has been double tapped or not
-  }
-  else{
-    m_dblTimer += dT;
-  }
+    if(btnPressedThisCycle && m_dblTimer > 500){
+      m_btnIsPressedTime = 0;
+      m_dblTimer = 0;
+    }
+    else if(btnPressedThisCycle && m_dblTimer < 500){
+      m_btnIsPressedTime = 0;
+      m_btnIsDoubleTapped = !m_btnIsDoubleTapped; // Set whether the btn has been double tapped or not
+    }
+    else{
+      m_dblTimer += dT;
+    }
 
 
-  if(m_btnIsPressed){
-    m_btnIsPressedTime += dT;
+    if(m_btnIsPressed){
+      m_btnIsPressedTime += dT;
+    }
   }
+
+else{
+    m_btnIsPressed = 0;
+  }
+  
+  oldReading = reading;
 }
 
 

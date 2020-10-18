@@ -57,7 +57,7 @@ public:
 
 /* * * * * * * * *
  * 				  
- *  MAIN OS METHOD   				  
+ *  MAIN OS METHODS   				  
  * 				  
  * * * * * * * * */
 
@@ -122,6 +122,15 @@ public:
  * 				  
  * * * * * * * * */
 
+/**
+ * Get FPS Max
+ *
+ *
+ * Returns what the FPS Max is in frames per second
+ *
+ * @param void
+ * @return m_fpsMax --> uint.
+ * */
 
 	unsigned int getFPSMax() const { return m_fpsMax; }
 
@@ -224,22 +233,22 @@ void printFrameData(DebugLevel debuglvl = DebugLevel::E_NORMAL) const;
 
 
 // Alternate constructor, to initialize things yourself
-/*
-	OS (int iScrW, int iScrH,
-	int iDinPin, int iCsPin, int iClkPin,
-	int iNumOfLED, int iBtnPin, int iBuzzPin,
-	int iJoyXpin, int iJoyYpin, int iJoyZpin
+
+	OS (int iScrW, int iScrH, int iNumOfLED,
+	int iDinPin, int iClkPin, int iCsPin,
+	int iJoyXpin, int iJoyYpin, int iJoyZpin,
+    int iBtnPin, int iBuzzPin
 	) :
-		Scr(iScrW, iScrH, iDinPin, iCsPin, iClkPin, iNumOfLED),
-		Btn(iBtnPin),
+		Scr(iScrW, iScrH, iDinPin, iClkPin, iCsPin, iNumOfLED),
 		Joy(iJoyXpin, iJoyYpin, iJoyZpin),
+		Btn(iBtnPin),
 		Buzz(iBuzzPin)
 	{
           //pinMode(m_ldrPin, INPUT);
 	      	Scr.clear();
 	      	m_frameOld = millis();
 	}	
-*/
+
 
 /* * * * * * * * * * *
  * 				     
@@ -250,4 +259,3 @@ void printFrameData(DebugLevel debuglvl = DebugLevel::E_NORMAL) const;
 	~OS(){}
 
 };
-

@@ -23,8 +23,8 @@ private:
 	const int m_NUM_OF_LED;
 
 	const int m_dinPin;
-	const int m_csPin;
 	const int m_clkPin;
+	const int m_csPin;
 
 	/* * * * * * * * 
  	* 				  
@@ -263,18 +263,16 @@ void profilingLED();
  * * * * * * * * * */
 
 Screen() :
-  m_scrW(_SCR_W), m_scrH(_SCR_H),
-  m_dinPin(_DIN_PIN), m_csPin(_CS_PIN), m_clkPin(_CLK_PIN),
-  m_NUM_OF_LED(_NUM_OF_LED),
+  m_scrW(_SCR_W), m_scrH(_SCR_H), m_NUM_OF_LED(_NUM_OF_LED),
+  m_dinPin(_DIN_PIN), m_clkPin(_CLK_PIN), m_csPin(_CS_PIN),
   LedMatrix(_DIN_PIN, _CLK_PIN, _CS_PIN, _NUM_OF_LED) 
   {}
 
-Screen(int iScrW, int iScrH,
-	int iDinPin, int iClkPin, int iCsPin,
-	int iNumOfLED) : 
-	m_scrW(iScrW), m_scrH(iScrH),
-	m_dinPin(iDinPin), m_csPin(iCsPin), m_clkPin(iClkPin),
-	m_NUM_OF_LED(iNumOfLED),
+Screen(int iScrW, int iScrH, int iNumOfLED,
+	int iDinPin, int iClkPin, int iCsPin)
+ 	: 
+	m_scrW(iScrW), m_scrH(iScrH), m_NUM_OF_LED(iNumOfLED),
+	m_dinPin(iDinPin), m_clkPin(iClkPin), m_csPin(iCsPin),
 	LedMatrix(iDinPin, iClkPin, iCsPin, iNumOfLED)
 	{}
 
@@ -355,7 +353,7 @@ int setJoyX(float max, float min, int threshold = 6);
  * NOTE: return is only for DEBUGGING, use getJoyY for normal purposes
  */
 
-int setJoyY(float max, float min, int threshold = 6);
+int setJoyY(float max, float min, int threshold = 20);
 
 // Getters
 
