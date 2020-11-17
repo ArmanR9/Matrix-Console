@@ -34,7 +34,7 @@ private:
  	* * * * * * * * */
  	
  	 unsigned long m_frame_dT {0};
- 	 unsigned int m_fpsMax {60};
+ 	 unsigned int m_fpsMax {10}; // Change to 60 later
 	 unsigned int m_fpsTarget {1000/m_fpsMax};
 	 unsigned long m_frameStart{0};
 	 unsigned long m_frameOld{0};

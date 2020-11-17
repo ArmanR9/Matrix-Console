@@ -1,11 +1,11 @@
 #include "LedControl.h"
 #include "OS.h"
 #include "game.h"
-#include "snake.h"
+#include "snake2.h"
 
 // Intialize Global Objects
 OS MatrixOS; 
-GameEngine* MatrixGEng = new Snake();
+GameEngine* MatrixGEng = new SnakeGame();
 
 // Intialize function
 

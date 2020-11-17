@@ -22,12 +22,9 @@ void Snake::update(OS& GameOS){
         return;
     }
 
-
 // Update Timer
     m_timer += GameOS.getFrame_dT();
-    
-
-
+  
 
  // Input and update head position
     Vec2 head = computePlayerPos(m_snakeBody[0], GameOS.Joy.getJoyX(), GameOS.Joy.getJoyY(), m_timer, m_timerThreshold, m_snakeLen);
@@ -37,7 +34,7 @@ void Snake::update(OS& GameOS){
 
     memset(snakeMap, 0, sizeof(snakeMap));
 
-    for(short i {m_snakeLen-1}; i > 0; --i){
+    for(int i {m_snakeLen-1}; i > 0; --i){
 
         m_snakeBody[i].x = m_snakeBody[i-1].x;
         m_snakeBody[i].y = m_snakeBody[i-1].y;
@@ -81,7 +78,7 @@ void Snake::update(OS& GameOS){
   //  if(m_isFoodSpawned)
       //  GameOS.Scr.setLED(food.x, food.y, true);
 
-    for(short i {0}; i < m_snakeLen; ++i)
+    for(int i {0}; i < m_snakeLen; ++i)
         GameOS.Scr.setLED(m_snakeBody[i].x, m_snakeBody[i].y, true);
    
 }
@@ -144,4 +141,4 @@ int array2 = 0;
 int array3 = 0;
 int array4 = 0;
 
-int* node = NULL
+int* node = NULL;
