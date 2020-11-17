@@ -21,7 +21,7 @@ void SpaceGame::updateLoop(OS& engine) {
 		for (int i = 0; i < min(numEnemiesDestroyed, (int)scoreDisplayAmount); i ++) {
 			int x = i % 16;
 			int y = i / 16;
-			engine.Scr.setPixel(x,y,true);
+			engine.Scr.setLED(x,y,true);
 		}
 		return;
 	}
@@ -56,7 +56,7 @@ void SpaceGame::updateLoop(OS& engine) {
 	
 	// Update and draw bullets
 	for (int i = numBullets - 1; i >= 0; i --) {
-		engine.setPixel((int)bullets[i].x, (int) bullets[i].y);
+		engine.Scr.setLED((int)bullets[i].x, (int) bullets[i].y, true);
 		bullets[i].x += engine.getFrame_dT() * 20;
 
 		bool destroyBullet = bullets[i].x >= 16;

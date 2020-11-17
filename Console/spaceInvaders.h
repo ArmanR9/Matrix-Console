@@ -3,7 +3,7 @@
 #include "OS.h"
 #include "utils.h"
 
-class SpaceGame : public Game {
+class SpaceGame : public GameEngine {
 private:
 	// Difficulty settings:
 	const float enemySpeed = 6;
